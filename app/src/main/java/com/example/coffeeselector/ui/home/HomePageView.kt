@@ -37,7 +37,7 @@ fun HomeScreen(
     }
 }
 
-@Preview (showBackground = true, apiLevel = 34)
+@Preview (showBackground = true)
 @Composable
 fun HomeScreenPreview() {
     HomeScreen(

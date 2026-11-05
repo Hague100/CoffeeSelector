@@ -3,7 +3,7 @@ package com.example.coffeeselector.ui.login
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 
-class LoginViewModel : ViewModel() {
+class AuthViewModel : ViewModel() {
     val auth = FirebaseAuth.getInstance()
     fun register(email: String, password: String, report: (Boolean, String) -> Unit) {
         auth.createUserWithEmailAndPassword(email, password)

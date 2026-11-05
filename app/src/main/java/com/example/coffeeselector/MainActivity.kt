@@ -18,7 +18,7 @@ import com.example.coffeeselector.ui.HomeRoute
 import com.example.coffeeselector.ui.LoginRoute
 import com.example.coffeeselector.ui.home.HomeScreen
 import com.example.coffeeselector.ui.login.LoginScreen
-import com.example.coffeeselector.ui.login.LoginViewModel
+import com.example.coffeeselector.ui.login.AuthViewModel
 
 
 /**
@@ -55,7 +55,7 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.padding(innerPadding))
                     }
                     composable<LoginRoute> {
-                        val loginViewModel: LoginViewModel = viewModel()
+                        val loginViewModel: AuthViewModel = viewModel()
                         LoginScreen(
                             onLogin = {email, password ->
                                 loginViewModel.login(email, password) { isSuccess, message ->

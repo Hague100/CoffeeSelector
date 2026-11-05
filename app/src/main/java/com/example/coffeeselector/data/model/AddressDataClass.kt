@@ -1,6 +1,6 @@
 package com.example.coffeeselector.data.model
 
-data class addressDataClass(
+data class AddressDataClass(
     val line1: String,
     val line2: String,
     val city: String,

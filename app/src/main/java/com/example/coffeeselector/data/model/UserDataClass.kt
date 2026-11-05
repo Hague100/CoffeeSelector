@@ -8,7 +8,7 @@ data class UserDataClass(
     val firstName: String,
     val lastName: String,
     val phoneNo: String,
-    val address: addressDataClass,
+    val address: AddressDataClass,
     val password: String,
     val dateOfBirth: LocalDate,
     val recentOrders: List<OrderDataClass>,

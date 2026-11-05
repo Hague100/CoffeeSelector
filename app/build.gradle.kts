@@ -2,12 +2,14 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     id("com.google.gms.google-services")
+    id("org.jetbrains.kotlin.plugin.serialization")
+
 }
 
 android {
     namespace = "com.example.coffeeselector"
     compileSdk {
-        version = release(36) {
+        version = release(37) {
             minorApiLevel = 1
         }
     }
@@ -40,6 +42,10 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
 //    implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
     implementation(libs.firebase.auth)
 //    implementation("com.google.firebase:firebase-firestore")

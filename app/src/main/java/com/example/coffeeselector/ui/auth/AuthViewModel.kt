@@ -1,4 +1,4 @@
-package com.example.coffeeselector.ui.login
+package com.example.coffeeselector.ui.auth
 
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth

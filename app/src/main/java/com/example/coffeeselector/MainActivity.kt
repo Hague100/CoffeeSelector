@@ -46,11 +46,11 @@ import com.google.firebase.auth.FirebaseAuth
  * https://firebase.google.com/docs/auth/web/manage-users#web_2
  */
 class MainActivity : ComponentActivity() {
+    private var user =  FirebaseAuth.getInstance().currentUser
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            var user =  FirebaseAuth.getInstance().currentUser
             val navController = rememberNavController()
             Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                 NavHost(

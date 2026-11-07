@@ -43,12 +43,11 @@ android {
 
 dependencies {
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.firebase.database.ktx)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
-//    implementation(platform("com.google.firebase:firebase-bom:34.1.0"))
     implementation(libs.firebase.auth)
-//    implementation("com.google.firebase:firebase-firestore")
     implementation(libs.navigation.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)

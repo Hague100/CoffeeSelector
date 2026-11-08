@@ -27,11 +27,14 @@ fun LoginScreen(onLogin: (String, String) -> Unit, onNavigateToRegister: () -> U
         OutlinedTextField(password, { password = it }, label = { Text("Password") },
             singleLine = true, visualTransformation = PasswordVisualTransformation())
         if (error.isNotEmpty()) Text(error, color = MaterialTheme.colorScheme.error)
-        Button(onClick = {
-            error = if (email.isBlank() || password.isBlank()) "Enter email and password" else ""
-            if (error.isEmpty()) onLogin(email.trim(), password)
-        }) { Text("Sign in") }
-        Button(onClick = onNavigateToRegister){Text("Register")}
+        Row() {
+            Button(onClick = {
+                error = if (email.isBlank() || password.isBlank()) "Enter email and password" else ""
+                if (error.isEmpty()) onLogin(email.trim(), password)
+            }) { Text("Sign in") }
+            Button(onClick = onNavigateToRegister){Text("Register")}
+        }
+
     }
 }
 

@@ -1,26 +1,24 @@
 package com.example.coffeeselector.data.repository
 
-import com.google.firebase.database.DatabaseReference
 import com.example.coffeeselector.data.model.UserDataClass
 import com.google.firebase.Firebase
-import com.google.firebase.database.database
-import com.google.firebase.database.getValue
-import kotlinx.coroutines.tasks.await
+import com.google.firebase.firestore.firestore
 
 
 /**
  * https://firebase.google.com/docs/database/android/read-and-write
+ * https://firebase.google.com/docs/firestore/manage-data/add-data#kotlin
+ * https://firebase.google.com/docs/rules/basics
  */
 
 class UserRepository {
-    private lateinit var database: DatabaseReference
+    private val database = Firebase.firestore
 
 
-    suspend fun getUser(userId: String): UserDataClass {
-        database = Firebase.database.reference
-        val userSnapshot = database.child("User").child(userId).get().await()
-
-        return userSnapshot.getValue<UserDataClass>() as UserDataClass
+    fun newUserData(userData: UserDataClass, userDocId: String, onResult: (Boolean, String) -> Unit) {
+        database.collection("users").document(userDocId).set(userData)
+            .addOnSuccessListener { onResult(true, "Data Added") }
+            .addOnFailureListener { onResult(false, "Data not added") }
     }
 
 }

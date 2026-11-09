@@ -99,8 +99,8 @@ class MainActivity : ComponentActivity() {
                     composable<RegisterRoute> {
                         val registerViewModel: AuthViewModel = viewModel()
                         RegisterScreen(
-                            onRegister = {email, password ->
-                                registerViewModel.register(email, password) { isSuccess, message ->
+                            onRegisterUserData = {email, password, firstName, lastName, username, phoneNo ->
+                                registerViewModel.registerUserData(email, password, firstName, lastName, username, phoneNo ) { isSuccess, message ->
                                     Toast.makeText(application, message, Toast.LENGTH_SHORT).show()
                                     if(isSuccess) {
                                         navController.navigate(UserHomeRoute) {
@@ -109,7 +109,8 @@ class MainActivity : ComponentActivity() {
                                     }
 
                                 }
-                            }
+                            },
+
                         )
                     }
                 }

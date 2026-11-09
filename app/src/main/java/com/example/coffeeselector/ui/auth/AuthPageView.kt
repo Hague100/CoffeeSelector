@@ -1,5 +1,6 @@
 package com.example.coffeeselector.ui.auth
 
+
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -10,6 +11,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.*
 import androidx.compose.ui.unit.dp
 
@@ -45,7 +47,7 @@ fun LoginScreenPreview(){
 }
 
 @Composable
-fun RegisterScreen(onRegister: (String, String) -> Unit) {
+fun RegisterScreen(onRegisterUserData: (String, String, String, String, String, String) -> Unit) {
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var emailConfirmation by rememberSaveable { mutableStateOf("") }
@@ -74,9 +76,20 @@ fun RegisterScreen(onRegister: (String, String) -> Unit) {
         OutlinedTextField(phoneNo,{ phoneNo = it }, label = { Text("Phone Number") },
             singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
         Button(onClick = {
-            error = if (email.isBlank() || password.isBlank()) "Enter email and password" else ""
-            if (error.isEmpty()) onRegister(email.trim(), password)
+            error = ""
+            error = if (
+                email.isBlank() || emailConfirmation.isBlank() || password.isBlank() ||
+                passwordConfirmation.isBlank() || firstName.isBlank() || lastName.isBlank() ||
+                username.isBlank() || phoneNo.isBlank()
+                ) "Fill all fields. " else ""
+
+            error += if(email != emailConfirmation) "Emails are not the same. " else ""
+            error += if(password != passwordConfirmation) "Passwords don't match. " else ""
+            if (error.isEmpty()) {
+                onRegisterUserData(email.trim(), password,firstName.trim(), lastName.trim(),username.trim(),phoneNo.trim())
+            }
         }) { Text("Register") }
+        if(error != "")Text(text = error, color = Color.Red)
 
     }
 
@@ -85,5 +98,5 @@ fun RegisterScreen(onRegister: (String, String) -> Unit) {
 @Preview (showBackground = true)
 @Composable
 fun RegisterScreenPreview(){
-    RegisterScreen {_, _ ->}
+    RegisterScreen { _, _, _, _, _, _ -> }
 }

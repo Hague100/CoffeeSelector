@@ -16,6 +16,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.coffeeselector.ui.LoginRoute
 import com.example.coffeeselector.ui.NoUserHomeRoute
+import com.example.coffeeselector.ui.ProfileRoute
 import com.example.coffeeselector.ui.RegisterRoute
 import com.example.coffeeselector.ui.UserHomeRoute
 import com.example.coffeeselector.ui.auth.LoginScreen
@@ -23,6 +24,8 @@ import com.example.coffeeselector.ui.auth.AuthViewModel
 import com.example.coffeeselector.ui.auth.RegisterScreen
 import com.example.coffeeselector.ui.home.NoUserHomeScreen
 import com.example.coffeeselector.ui.home.UserHomeScreen
+import com.example.coffeeselector.ui.profile.ProfileViewModel
+import com.example.coffeeselector.ui.profile.UserProfile
 import com.google.firebase.auth.FirebaseAuth
 
 
@@ -70,7 +73,7 @@ class MainActivity : ComponentActivity() {
                     composable<UserHomeRoute> {
                         val logOutViewModel: AuthViewModel = viewModel()
                         UserHomeScreen(
-                            {TODO()},
+                            {navController.navigate(ProfileRoute)},
                             {TODO()},
                             {logOutViewModel.logout()},
                             {
@@ -111,6 +114,20 @@ class MainActivity : ComponentActivity() {
                                 }
                             },
 
+                        )
+                    }
+
+                    composable<ProfileRoute> {
+                        val profileViewModel: ProfileViewModel = viewModel()
+                        profileViewModel.getUserDataClass() { isSuccess, message,  ->
+                            if (isSuccess){
+                                Toast.makeText(application, message, Toast.LENGTH_SHORT).show()
+                            } else Toast.makeText(application, message, Toast.LENGTH_SHORT).show()
+                        }
+                        UserProfile(
+                            profileViewModel.userData,
+                            {},
+                            {}
                         )
                     }
                 }

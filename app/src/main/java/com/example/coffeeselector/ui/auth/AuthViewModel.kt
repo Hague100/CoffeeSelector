@@ -7,7 +7,7 @@ import com.example.coffeeselector.data.repository.UserRepository
 import com.google.firebase.auth.FirebaseAuth
 
 class AuthViewModel : ViewModel() {
-    val auth = FirebaseAuth.getInstance()
+    private val auth = FirebaseAuth.getInstance()
     private val userRepository = UserRepository()
     fun register(email: String, password: String, report: (Boolean, String) -> Unit) {
         auth.createUserWithEmailAndPassword(email, password)
@@ -23,7 +23,7 @@ class AuthViewModel : ViewModel() {
                 val userData = UserDataClass(username, NameDataClass(firstName, lastName), phoneNo)
                 val userDocId = auth.currentUser?.uid
                 if (userDocId != null) {
-                    userRepository.newUserData(userData, userDocId) { isDocSuccess, docMessage ->
+                    userRepository.createUserData(userData, userDocId) { isDocSuccess, docMessage ->
                         if (isDocSuccess) {
                             report(true, "completely successfully.")
                         } else {

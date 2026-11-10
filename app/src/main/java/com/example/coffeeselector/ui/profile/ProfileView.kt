@@ -19,12 +19,11 @@ import androidx.compose.ui.unit.sp
 import com.example.coffeeselector.data.model.AddressDataClass
 import com.example.coffeeselector.data.model.NameDataClass
 import com.example.coffeeselector.data.model.UserDataClass
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import java.util.Date
 
 @Composable
 fun UserProfile(
-    user: UserDataClass,
+    userDC: UserDataClass,
     onNavigateToRecentOrders: () -> Unit,
     onNavigateToPastOrders: () -> Unit,
     modifier: Modifier = Modifier
@@ -35,24 +34,24 @@ fun UserProfile(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = user.username, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+        Text(text = userDC.username, fontWeight = FontWeight.Bold, fontSize = 20.sp)
         Spacer(modifier = Modifier.height(20.dp))
         Row() {
             Text(text = "Your Name:", fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.width(10.dp))
-            Text(text = "${user.name.first} ${user.name.last}")
+            Text(text = "${userDC.name.first} ${userDC.name.last}")
         }
         Spacer(modifier = Modifier.height(10.dp))
         Row() {
             Text(text = "Phone Number:", fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.width(10.dp))
-            Text(text = user.phoneNo)
+            Text(text = userDC.phoneNo)
         }
         Spacer(modifier = Modifier.height(10.dp))
         Row() {
             Text(text = "Address:", fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.width(10.dp))
-            val userAddress = user.address
+            val userAddress = userDC.address
             if(userAddress == null) Text(text = "No Address")
             else {
                 Column() {
@@ -70,10 +69,7 @@ fun UserProfile(
         Row() {
             Text(text = "Date of Birth:", fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.width(10.dp))
-            //https://www.baeldung.com/kotlin/dates
-            //https://www.baeldung.com/java-datetimeformatter
-            val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-            Text(text = user.dateOfBirth?.format(formatter) ?: "No Date")
+            Text(text = userDC.dateOfBirth?.toString() ?: "No Date")
         }
         Spacer(modifier = Modifier.height(20.dp))
         Row() {
@@ -97,8 +93,8 @@ fun UserProfilePreview() {
         "TestUser1",
         NameDataClass("First","Last"),
         "07777 777777",
-        AddressDataClass("1 Test Street",null,"Testville",null,"TE11AA"),
-        LocalDate.of(2018, 12, 31),
+        AddressDataClass("1 Test Street",null,"Test City",null,"TE11AA"),
+        Date(2018, 12, 31),
         null,
         null)
     UserProfile(

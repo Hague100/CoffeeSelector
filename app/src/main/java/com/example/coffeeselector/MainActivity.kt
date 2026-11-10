@@ -14,11 +14,19 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.coffeeselector.ui.HomeRoute
 import com.example.coffeeselector.ui.LoginRoute
-import com.example.coffeeselector.ui.home.HomeScreen
-import com.example.coffeeselector.ui.login.LoginScreen
-import com.example.coffeeselector.ui.login.AuthViewModel
+import com.example.coffeeselector.ui.NoUserHomeRoute
+import com.example.coffeeselector.ui.ProfileRoute
+import com.example.coffeeselector.ui.RegisterRoute
+import com.example.coffeeselector.ui.UserHomeRoute
+import com.example.coffeeselector.ui.auth.LoginScreen
+import com.example.coffeeselector.ui.auth.AuthViewModel
+import com.example.coffeeselector.ui.auth.RegisterScreen
+import com.example.coffeeselector.ui.home.NoUserHomeScreen
+import com.example.coffeeselector.ui.home.UserHomeScreen
+import com.example.coffeeselector.ui.profile.ProfileViewModel
+import com.example.coffeeselector.ui.profile.UserProfile
+import com.google.firebase.auth.FirebaseAuth
 
 
 /**
@@ -35,7 +43,13 @@ import com.example.coffeeselector.ui.login.AuthViewModel
  * but mainly this for context issues I was having
  * https://pinakinvox.com/blog/android-ui-tutorial-how-to-implement-and-customize-toast-on-android
  */
+
+/**
+ * This will be my guide for checking what users are logged in
+ * https://firebase.google.com/docs/auth/web/manage-users#web_2
+ */
 class MainActivity : ComponentActivity() {
+    private var user =  FirebaseAuth.getInstance().currentUser
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -44,30 +58,76 @@ class MainActivity : ComponentActivity() {
             Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                 NavHost(
                     navController = navController,
-                    startDestination = HomeRoute,
+                    startDestination = if(user != null) UserHomeRoute else NoUserHomeRoute,
                     modifier = Modifier
                 ) {
-                    composable<HomeRoute> {
-                        HomeScreen(
-                            {navController.navigate(LoginRoute)},
-                            {},
-                            {},
-                            modifier = Modifier.padding(innerPadding))
+                    composable<NoUserHomeRoute> {
+                        NoUserHomeScreen(
+                            { navController.navigate(LoginRoute) },
+                            { navController.navigate(RegisterRoute) },
+                            {TODO()},
+                            modifier = Modifier.padding(innerPadding)
+                        )
+                    }
+
+                    composable<UserHomeRoute> {
+                        val logOutViewModel: AuthViewModel = viewModel()
+                        UserHomeScreen(
+                            {navController.navigate(ProfileRoute)},
+                            {TODO()},
+                            {logOutViewModel.logout()},
+                            {
+                                user = FirebaseAuth.getInstance().currentUser
+                                navController.navigate(NoUserHomeRoute) {
+                                    popUpTo(0) {inclusive = true}
+                                }
+                            }
+                        )
                     }
                     composable<LoginRoute> {
                         val loginViewModel: AuthViewModel = viewModel()
                         LoginScreen(
                             onLogin = {email, password ->
                                 loginViewModel.login(email, password) { isSuccess, message ->
-
                                     Toast.makeText(application, message, Toast.LENGTH_SHORT).show()
                                     if (isSuccess) {
-                                        navController.navigate(HomeRoute) {
-                                            popUpTo(HomeRoute) {inclusive = true}
+                                        navController.navigate(UserHomeRoute) {
+                                            popUpTo(0) {inclusive = true}
                                         }
                                     }
                                 }
-                            }
+                            } , {navController.navigate(RegisterRoute)}
+                        )
+                    }
+                    composable<RegisterRoute> {
+                        val registerViewModel: AuthViewModel = viewModel()
+                        RegisterScreen(
+                            onRegisterUserData = {email, password, firstName, lastName, username, phoneNo ->
+                                registerViewModel.registerUserData(email, password, firstName, lastName, username, phoneNo ) { isSuccess, message ->
+                                    Toast.makeText(application, message, Toast.LENGTH_SHORT).show()
+                                    if(isSuccess) {
+                                        navController.navigate(UserHomeRoute) {
+                                            popUpTo(0) {inclusive = true}
+                                        }
+                                    }
+
+                                }
+                            },
+
+                        )
+                    }
+
+                    composable<ProfileRoute> {
+                        val profileViewModel: ProfileViewModel = viewModel()
+                        profileViewModel.getUserDataClass() { isSuccess, message,  ->
+                            if (isSuccess){
+                                Toast.makeText(application, message, Toast.LENGTH_SHORT).show()
+                            } else Toast.makeText(application, message, Toast.LENGTH_SHORT).show()
+                        }
+                        UserProfile(
+                            profileViewModel.userData,
+                            {},
+                            {}
                         )
                     }
                 }

@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun HomeScreen(
+fun NoUserHomeScreen(
     onNavigateToLogin: () -> Unit,
     onNavigateToRegister: () -> Unit,
     onNavigateToLocations: () -> Unit,
@@ -30,19 +30,55 @@ fun HomeScreen(
         Text(text = "Coffee Selector", fontSize = 40.sp, modifier = Modifier.padding(all = 20.dp))
         Button(onNavigateToLogin) {Text("Log In")}
         Spacer(modifier = Modifier.height(10.dp))
-        Button(onClick = onNavigateToRegister){Text("Register Account")}
+        Button(onClick = onNavigateToRegister){Text("Register")}
         Spacer(modifier = Modifier.height(10.dp))
         Button(onNavigateToLocations) {Text("Locations")}
 
     }
 }
 
+@Composable
+fun UserHomeScreen(
+    onNavigateToAccount: () -> Unit,
+    onNavigateToLocations: () -> Unit,
+    onLogOut: () -> Unit,
+    onLogOutNavigateTo: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = "Coffee Selector", fontSize = 40.sp, modifier = Modifier.padding(all = 20.dp))
+        Button(onNavigateToAccount) {Text("Account")}
+        Spacer(modifier = Modifier.height(10.dp))
+        Button(onClick = onNavigateToLocations){Text("Locations")}
+        Spacer(modifier = Modifier.height(10.dp))
+        Button({
+            onLogOut()
+            onLogOutNavigateTo()
+        }) {Text("Log Out")}
+    }
+}
+
 @Preview (showBackground = true)
 @Composable
-fun HomeScreenPreview() {
-    HomeScreen(
+fun NoUserHomeScreenPreview() {
+    NoUserHomeScreen(
         onNavigateToLogin = {},
         onNavigateToRegister = {},
         onNavigateToLocations = {}
+    )
+}
+
+@Preview (showBackground = true)
+@Composable
+fun UserHomeScreenPreview() {
+    UserHomeScreen(
+        {},
+        {},
+        {},
+        {}
     )
 }

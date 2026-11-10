@@ -9,7 +9,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -117,18 +120,48 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
+//                    composable<ProfileRoute> {
+//                        val profileViewModel: ProfileViewModel = viewModel()
+//                        profileViewModel.getUserDataClass() { isSuccess, message,  ->
+//                            if (isSuccess){
+//                                Toast.makeText(application, message, Toast.LENGTH_SHORT).show()
+//                            } else Toast.makeText(application, message, Toast.LENGTH_SHORT).show()
+//                        }
+//                        UserProfile(
+//                            profileViewModel.userData,
+//                            {},
+//                            {}
+//                        )
+//                    }
+                    /**
+                     * guide for state management:
+                     * https://developers.arcgis.com/kotlin/programming-patterns/manage-geoview-state/#using-the-viewmodel-in-a-composable
+                     *
+                     */
                     composable<ProfileRoute> {
                         val profileViewModel: ProfileViewModel = viewModel()
-                        profileViewModel.getUserDataClass() { isSuccess, message,  ->
-                            if (isSuccess){
-                                Toast.makeText(application, message, Toast.LENGTH_SHORT).show()
-                            } else Toast.makeText(application, message, Toast.LENGTH_SHORT).show()
+                        val statusMessage by profileViewModel.statusMessage.collectAsStateWithLifecycle()
+                        val userData by profileViewModel.userData.collectAsStateWithLifecycle()
+                        /**
+                         * talks about why to use launch effects
+                         * https://composables.com/blog/side-effects
+                         */
+                        LaunchedEffect(statusMessage) {
+                            val currentMessage = statusMessage
+                            currentMessage?.isNotBlank()?.let { it1 ->
+                                if(it1)
+                                    Toast.makeText(application, statusMessage, Toast.LENGTH_SHORT).show()
+                            }
                         }
-                        UserProfile(
-                            profileViewModel.userData,
-                            {},
-                            {}
-                        )
+
+                        userData?.let {
+                            UserProfile(
+                                it,
+                                {},
+                                {}
+                            )
+                        }
+
                     }
                 }
             }

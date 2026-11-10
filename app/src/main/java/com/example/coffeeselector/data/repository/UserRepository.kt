@@ -4,6 +4,7 @@ import com.example.coffeeselector.data.model.UserDataClass
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
+import kotlinx.coroutines.tasks.await
 
 
 /**
@@ -21,19 +22,35 @@ class UserRepository {
             .addOnFailureListener { onResult(false, "Data not added") }
     }
 
-    fun readUserData(userDocId: String, onResult: (Boolean, String, UserDataClass?) -> Unit) {
-        database.collection("users").document(userDocId).get()
-            .addOnSuccessListener { document ->
-                if (document != null && document.exists()) {
-                    val userData = document.toObject<UserDataClass>()
-                    if (userData != null) onResult(true, "User data", userData)
-                    else onResult(false, "Failed to read data", null)
-                } else onResult(false, "No user data", null)
-            }
-            .addOnFailureListener { exception ->
-                onResult(false, "User data not found", null) }
+//    fun readUserData(userDocId: String, onResult: (Boolean, String, UserDataClass?) -> Unit) {
+//        database.collection("users").document(userDocId).get()
+//            .addOnSuccessListener { document ->
+//                if (document != null && document.exists()) {
+//                    val userData = document.toObject<UserDataClass>()
+//                    if (userData != null) onResult(true, "User data", userData)
+//                    else onResult(false, "Failed to read data", null)
+//                } else onResult(false, "No user data", null)
+//            }
+//            .addOnFailureListener { exception ->
+//                onResult(false, "User data not found", null) }
+//    }
+
+    /**
+     * Decided after some issues to try an await function which requires a Coroutines
+     * https://developer.android.com/topic/libraries/architecture/coroutines
+     * https://kotlinlang.org/api/core/kotlin-stdlib/kotlin/-triple/
+      */
+    suspend fun readUserData(userDocId: String): Triple<Boolean, String, UserDataClass?> {
+        val onResult:  Triple<Boolean, String, UserDataClass?> = try{
+            val document = database.collection("users").document(userDocId).get().await()
+            if (document.exists()) {
+                val userData = document.toObject<UserDataClass>()
+                if (userData != null) Triple(true, "User data", userData)
+                else Triple(false, "Failed to read data", null)
+            } else Triple(false, "No user data", null)
+        } catch (e: Exception){
+            Triple(false, "User data not found", null)
+        }
+        return onResult
     }
-
-
-
 }

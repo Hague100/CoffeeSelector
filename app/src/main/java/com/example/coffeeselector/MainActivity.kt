@@ -17,6 +17,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.coffeeselector.ui.LocationListRoute
 import com.example.coffeeselector.ui.LoginRoute
 import com.example.coffeeselector.ui.NoUserHomeRoute
 import com.example.coffeeselector.ui.ProfileRoute
@@ -161,6 +162,10 @@ class MainActivity : ComponentActivity() {
                                 {}
                             )
                         }
+
+                    }
+
+                    composable<LocationListRoute> {
 
                     }
                 }

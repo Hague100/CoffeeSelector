@@ -5,6 +5,6 @@ data class LocationDataClass(
     val cafeCoordinatesObject: Pair<Double, Double>? = null,
     val cafeDescription: String? = null,
     val streetAddress: AddressDataClass? = null,
-    val menuStockQuantity: List<Pair<ItemDataClass, Int>>? = null,
-    val extraAvailability: List<Pair<ExtraDataClass, Boolean>>? = null
+    val menuStockQuantity: List<Pair<String, Boolean>>? = null,
+    val extraAvailability: List<Pair<String, Boolean>>? = null
     )

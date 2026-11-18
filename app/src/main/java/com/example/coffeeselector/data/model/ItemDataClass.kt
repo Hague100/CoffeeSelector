@@ -1,13 +1,14 @@
 package com.example.coffeeselector.data.model
 
+import java.util.Locale
+
 data class ItemDataClass(
-    val itemId: String,
     val itemName: String,
-    val ingredientList: List<String>,
-    val environmentalAllergens: List<String>,
-    val dailyPercentageList: List<Double>,
-    val perServingList: List<Double>,
-    val perOrderLimit: Int,
-    val customizerMaxObject: List<Pair<ExtraDataClass, Int>>,
-    val itemPrice: Double
-)
+    val itemPrice: Double,
+    val itemDescription: String,
+    val customizerMaxObject: List<Pair<ExtraDataClass, Int>>? = null
+) {
+
+    val formattedPrice: String
+        get() = String.format(Locale.UK, "£%.2f", itemPrice)
+}

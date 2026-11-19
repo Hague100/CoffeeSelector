@@ -4,10 +4,10 @@ import com.google.firebase.firestore.Exclude
 import java.util.Locale
 
 data class ItemDataClass(
-    val itemName: String,
-    val itemPrice: Double,
-    val itemDescription: String,
-    val customizerMaxObject: List<Pair<String, Int>>? = null
+    val itemName: String = "",
+    val itemPrice: Double = 0.0,
+    val itemDescription: String = "",
+    val customizerMaxObject: Map<String, Int> = emptyMap()
 ) {
     @get:Exclude
     val formattedPrice: String

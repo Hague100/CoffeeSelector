@@ -37,8 +37,7 @@ fun ItemInMenuList(
     onAddOneToOrder: () -> Unit,
     onRemoveOneToOrder:() -> Unit
 ) {
-    val description = itemDC.itemDescription.let { desc -> desc
-    }
+    val description = itemDC.itemDescription
     Row(
         modifier = Modifier
             .fillMaxWidth()

@@ -33,8 +33,7 @@ fun BasketItem(
     onAddOneToOrder: () -> Unit,
     onRemoveOneToOrder:() -> Unit
 ){
-    val description = itemDC.itemDescription.let { desc -> desc
-    }
+    val description = itemDC.itemDescription
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -132,7 +131,7 @@ fun BasketList(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             items(
-                items = orderDC.itemIdQuantityObject
+                items = orderDC.itemIdQuantityObject.toList()
             ) { (itemId, quantity) ->
                 val itemDC = collectItemDC(itemId)
                 val isAvailable = collectMenuAvailability(locationId,itemId)
@@ -206,7 +205,7 @@ fun BasketListPreview() {
         userId = "user_456",
         locationId = "leicester_city_centre",
         customerEmail = "customer@example.com",
-        itemIdQuantityObject = listOf(
+        itemIdQuantityObject = mapOf(
             "coffee_1" to 2,
             "coffee_2" to 1,
             "pastry_1" to 1

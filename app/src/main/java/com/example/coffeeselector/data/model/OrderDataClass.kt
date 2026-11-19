@@ -4,6 +4,7 @@ import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.ServerTimestamp
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
@@ -11,13 +12,14 @@ data class OrderDataClass(
     val userId: String = "",
     val locationId: String = "",
     val customerEmail: String = "",
-    val itemIdQuantityObject: List<Pair<String, Int>> = emptyList(),
+    val itemIdQuantityObject: Map<String, Int> = emptyMap(),
     @ServerTimestamp
     val dateTimeOrderInitiated: Date? = null,
     val dateTimeOrderFinished: Date? = null,
     val dateTimeOrderCollected: Date? = null,
     val totalCost: Double = 0.0,
-    val canceled: Boolean = false
+    val canceled: Boolean = false,
+    val rating: Int? = null
 ) {
     @get:Exclude
     val formattedCost: String
@@ -36,6 +38,12 @@ data class OrderDataClass(
         get() = dateTimeOrderCollected?.toLocalDateTime()
 
     @get:Exclude
+    val formattedCollectedTime: String?
+        get() = collectedLocalDateTime?.format(
+            DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm", Locale.UK)
+        )
+
+    @get:Exclude
     val statusMessage = if(!canceled){
         if(dateTimeOrderCollected != null){
             "Completed"
@@ -52,4 +60,5 @@ fun Date.toLocalDateTime(zoneId: ZoneId = ZoneId.systemDefault()): LocalDateTime
         .atZone(zoneId)
         .toLocalDateTime()
 }
+
 

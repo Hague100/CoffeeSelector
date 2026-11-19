@@ -123,7 +123,7 @@ fun BasketList(
 ) {
     val locationId = orderDC.locationId
     var canComplete = false
-        Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
@@ -181,8 +181,6 @@ fun BasketList(
     }
 }
 
-
-//preview data  for BasketListPreview was generated quickly with Gemini
 @Preview(showBackground = true)
 @Composable
 fun BasketListPreview() {
@@ -205,7 +203,6 @@ fun BasketListPreview() {
     )
 
     val sampleOrder = OrderDataClass(
-        orderId = "order_123",
         userId = "user_456",
         locationId = "leicester_city_centre",
         customerEmail = "customer@example.com",

@@ -63,18 +63,18 @@ fun ItemInMenuList(
             }
             Row() {
                 Text(text = description, fontSize = 10.sp, color = Color.Gray,
-                    modifier = Modifier.fillMaxWidth(.5f))
+                    modifier = Modifier.weight(2f))
                 Button(onClick = onAddOneToOrder, enabled = availability,
                     shape = RoundedCornerShape(4.dp),
                     modifier = Modifier
-                        .fillMaxWidth(.5f)
+                        .weight(1f)
                         .padding(horizontal = 4.dp)) {
                     Text(text = "+", fontWeight = FontWeight.Bold,fontSize = 25.sp)
                 }
                 Button(onClick = onRemoveOneToOrder, enabled = inOrder,
                     shape = RoundedCornerShape(4.dp),
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .weight(1f)
                         .padding(horizontal = 4.dp)) {
                     Text(text = "-", fontWeight = FontWeight.Bold,fontSize = 25.sp)
                 }

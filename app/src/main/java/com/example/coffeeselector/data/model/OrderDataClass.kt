@@ -8,7 +8,6 @@ import java.util.Date
 import java.util.Locale
 
 data class OrderDataClass(
-    val orderId: String = "",
     val userId: String = "",
     val locationId: String = "",
     val customerEmail: String = "",
@@ -17,7 +16,8 @@ data class OrderDataClass(
     val dateTimeOrderInitiated: Date? = null,
     val dateTimeOrderFinished: Date? = null,
     val dateTimeOrderCollected: Date? = null,
-    val totalCost: Double = 0.0
+    val totalCost: Double = 0.0,
+    val canceled: Boolean = false
 ) {
     @get:Exclude
     val formattedCost: String
@@ -34,6 +34,17 @@ data class OrderDataClass(
     @get:Exclude
     val collectedLocalDateTime: LocalDateTime?
         get() = dateTimeOrderCollected?.toLocalDateTime()
+
+    @get:Exclude
+    val statusMessage = if(!canceled){
+        if(dateTimeOrderCollected != null){
+            "Completed"
+        } else if(dateTimeOrderFinished != null){
+            "Ready To Collect"
+        } else if(dateTimeOrderInitiated != null){
+            "Processing"
+        } else "Incomplete"
+    } else "Canceled"
 }
 
 fun Date.toLocalDateTime(zoneId: ZoneId = ZoneId.systemDefault()): LocalDateTime {

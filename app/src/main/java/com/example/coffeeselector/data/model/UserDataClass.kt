@@ -12,6 +12,6 @@ data class UserDataClass(
     val phoneNo: String = "",
     val address: AddressDataClass? = null,
     val dateOfBirth: Date? = null,
-    val recentOrders: List<OrderDataClass>? = null,
-    val unfinishedOrder: OrderDataClass? = null
+    val recentOrders: List<String>? = null,
+    val unfinishedOrder: String? = null
 )

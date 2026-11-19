@@ -11,8 +11,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -120,32 +125,67 @@ fun ItemInMenuListPreview() {
 
 }
 
+
 @Composable
 fun MenuList(
     menuItemsIdAndAvailability: List<Pair<String, Boolean>>,
-    collectedItemDataClass:  (String) -> ItemDataClass,
+    collectedItemDataClass: (String) -> ItemDataClass,
     itemInOrderCheck: (String) -> Boolean,
     onAddItemToOrder: (String) -> Unit,
     onRemoveItemToOrder: (String) -> Unit = {},
     onNavigateToItem: (String) -> Unit = {}
 ) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        items(menuItemsIdAndAvailability) { (itemId, availability) ->
-            ItemInMenuList(
-                collectedItemDataClass(itemId),
-                availability = availability,
-                inOrder = itemInOrderCheck(itemId),
-                onNavigateToItem = {onNavigateToItem(itemId)},
-                onAddOneToOrder = {onAddItemToOrder(itemId)},
-                onRemoveOneToOrder = {onRemoveItemToOrder(itemId)})
+    var showUnavailable by remember { mutableStateOf(true) }
+
+    val displayedItems = remember(menuItemsIdAndAvailability, showUnavailable) {
+        if (showUnavailable) {
+            menuItemsIdAndAvailability
+        } else {
+            menuItemsIdAndAvailability.filter { (_, availability) -> availability }
+        }
+    }
+
+    Column(modifier = Modifier.fillMaxSize()) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = "Show unavailable items",
+                fontWeight = FontWeight.Medium
+            )
+            Switch(
+                checked = showUnavailable,
+                onCheckedChange = { showUnavailable = it }
+            )
+        }
+
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            items(
+                items = displayedItems,
+                key = { it.first }
+            ) { (itemId, availability) ->
+                ItemInMenuList(
+                    collectedItemDataClass(itemId),
+                    availability = availability,
+                    inOrder = itemInOrderCheck(itemId),
+                    onNavigateToItem = { onNavigateToItem(itemId) },
+                    onAddOneToOrder = { onAddItemToOrder(itemId) },
+                    onRemoveOneToOrder = { onRemoveItemToOrder(itemId) }
+                )
+            }
         }
     }
 }
 
+//preview data  for MenuListPreview was generated quickly with Gemini
 @Preview(showBackground = true)
 @Composable
 fun MenuListPreview() {

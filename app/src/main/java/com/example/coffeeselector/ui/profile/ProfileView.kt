@@ -21,13 +21,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.coffeeselector.data.model.AddressDataClass
 import com.example.coffeeselector.data.model.NameDataClass
 import com.example.coffeeselector.data.model.UserDataClass
+import java.time.LocalDate
+import java.time.ZoneOffset
 import java.util.Date
 
 @Composable
@@ -95,14 +96,16 @@ fun UserProfile(
     }
 }
 
-val testUserDataClass = UserDataClass(
-    "TestUser1",
-    NameDataClass("First","Last"),
-    "07777 777777",
-    AddressDataClass("1 Test Street",null,"Test City",null,"TE11AA"),
-    Date(2018, 12, 31),
-    null,
-    null)
+private val testUserDataClass = UserDataClass(
+    id = "user_1",
+    username = "TestUser1",
+    name = NameDataClass("First", "Last"),
+    phoneNo = "07777 777777",
+    address = AddressDataClass("1 Test Street", null, "Test City", null, "TE1 1AA"),
+    dateOfBirth = Date.from(LocalDate.of(2018, 12, 31).atStartOfDay(ZoneOffset.UTC).toInstant()),
+    recentOrders = null,
+    unfinishedOrder = null
+)
 
 @Preview (showBackground = true)
 @Composable

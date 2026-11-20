@@ -82,10 +82,10 @@ fun ItemInMenuList(
     }
 }
 
-val testItem = ItemDataClass(
-    "Test Name",
-     100.0,
-    "This is a test description I do not know how long it should be"
+private val testItem = ItemDataClass(
+    itemName = "Test Name",
+    itemPrice = 100.0,
+    itemDescription = "This is a test description I do not know how long it should be"
 )
 
 @Preview(showBackground = true)
@@ -184,52 +184,70 @@ fun MenuList(
     }
 }
 
-//preview data  for MenuListPreview was generated quickly with Gemini
 @Preview(showBackground = true)
 @Composable
 fun MenuListPreview() {
-    val sampleMenuItems = mapOf(
-        "item_1" to ItemDataClass(
-            itemName = "Classic Burger",
-            itemPrice = 12.50,
-            itemDescription = "Juicy beef patty with lettuce, tomato, and house sauce."
-        ),
-        "item_2" to ItemDataClass(
-            itemName = "Truffle Fries",
-            itemPrice = 5.00,
-            itemDescription = "Crispy fries tossed in truffle oil and parmesan."
-        ),
-        "item_3" to ItemDataClass(
-            itemName = "Seasonal Tart",
-            itemPrice = 7.25,
-            itemDescription = "Freshly baked pastry with seasonal fruit."
-        ),
-        "item_4" to ItemDataClass(
-            itemName = "Iced Matcha Latte",
-            itemPrice = 4.50,
-            itemDescription = "Ceremonial grade matcha whisked with oat milk."
+    val sampleMenuItems = remember {
+        mapOf(
+            "item_1" to ItemDataClass(
+                id = "item_1",
+                itemName = "Classic Burger",
+                itemPrice = 12.50,
+                itemDescription = "Juicy beef patty with lettuce, tomato, and house sauce."
+            ),
+            "item_2" to ItemDataClass(
+                id = "item_2",
+                itemName = "Truffle Fries",
+                itemPrice = 5.00,
+                itemDescription = "Crispy fries tossed in truffle oil and parmesan."
+            ),
+            "item_3" to ItemDataClass(
+                id = "item_3",
+                itemName = "Seasonal Tart",
+                itemPrice = 7.25,
+                itemDescription = "Freshly baked pastry with seasonal fruit."
+            ),
+            "item_4" to ItemDataClass(
+                id = "item_4",
+                itemName = "Iced Matcha Latte",
+                itemPrice = 4.50,
+                itemDescription = "Ceremonial grade matcha whisked with oat milk."
+            )
         )
-    )
+    }
 
-    val menuAvailability = listOf(
-        "item_1" to true,  // Available & in order
-        "item_2" to true,  // Available & not in order
-        "item_3" to false, // Unavailable & in order
-        "item_4" to false  // Unavailable & not in order
-    )
+    val menuAvailability = remember {
+        listOf(
+            "item_1" to true,  // Available & in order
+            "item_2" to true,  // Available & not in order
+            "item_3" to false, // Unavailable & in order
+            "item_4" to false  // Unavailable & not in order
+        )
+    }
 
-    val itemsInOrder = setOf("item_1", "item_3")
+    var itemsInOrder by remember {
+        mutableStateOf(setOf("item_1", "item_3"))
+    }
 
     MenuList(
         menuItemsIdAndAvailability = menuAvailability,
         collectedItemDataClass = { id ->
-            sampleMenuItems[id] ?: ItemDataClass("Unknown Item", 0.0, "")
+            sampleMenuItems[id] ?: ItemDataClass(
+                id = id,
+                itemName = "Unknown Item",
+                itemPrice = 0.0,
+                itemDescription = ""
+            )
         },
         itemInOrderCheck = { id ->
             id in itemsInOrder
         },
-        onAddItemToOrder = {},
-        onRemoveItemToOrder = {},
+        onAddItemToOrder = { id ->
+            itemsInOrder = itemsInOrder + id
+        },
+        onRemoveItemToOrder = { id ->
+            itemsInOrder = itemsInOrder - id
+        },
         onNavigateToItem = {}
     )
 }

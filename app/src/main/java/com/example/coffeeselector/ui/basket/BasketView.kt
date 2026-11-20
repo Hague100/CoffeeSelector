@@ -14,6 +14,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -81,10 +85,10 @@ fun BasketItem(
 
 }
 
-val testItem = ItemDataClass(
-    "Test Name",
-    100.0,
-    "This is a test description I do not know how long it should be"
+private val testItem = ItemDataClass(
+    itemName = "Test Name",
+    itemPrice = 100.0,
+    itemDescription = "This is a test description I do not know how long it should be"
 )
 
 @Preview(showBackground = true)
@@ -183,43 +187,75 @@ fun BasketList(
 @Preview(showBackground = true)
 @Composable
 fun BasketListPreview() {
-    val sampleMenuItems = mapOf(
-        "coffee_1" to ItemDataClass(
-            itemName = "Flat White",
-            itemPrice = 3.50,
-            itemDescription = "Double shot espresso with velvety steamed milk."
-        ),
-        "coffee_2" to ItemDataClass(
-            itemName = "Iced Caramel Latte",
-            itemPrice = 4.20,
-            itemDescription = "Chilled espresso with caramel syrup and oat milk."
-        ),
-        "pastry_1" to ItemDataClass(
-            itemName = "Almond Croissant",
-            itemPrice = 3.00,
-            itemDescription = "Flaky butter croissant filled with sweet almond frangipane."
+    val sampleMenuItems = remember {
+        mapOf(
+            "coffee_1" to ItemDataClass(
+                itemName = "Flat White",
+                itemPrice = 3.50,
+                itemDescription = "Double shot espresso with velvety steamed milk."
+            ),
+            "coffee_2" to ItemDataClass(
+                itemName = "Iced Caramel Latte",
+                itemPrice = 4.20,
+                itemDescription = "Chilled espresso with caramel syrup and oat milk."
+            ),
+            "pastry_1" to ItemDataClass(
+                itemName = "Almond Croissant",
+                itemPrice = 3.00,
+                itemDescription = "Flaky butter croissant filled with sweet almond frangipane."
+            )
         )
-    )
+    }
 
-    val sampleOrder = OrderDataClass(
-        userId = "user_456",
-        locationId = "leicester_city_centre",
-        customerEmail = "customer@example.com",
-        itemIdQuantityObject = mapOf(
-            "coffee_1" to 2,
-            "coffee_2" to 1,
-            "pastry_1" to 1
-        ),
-        totalCost = 14.20
-    )
+    var orderState by remember {
+        mutableStateOf(
+            OrderDataClass(
+                userId = "user_456",
+                locationId = "leicester_city_centre",
+                customerEmail = "customer@example.com",
+                itemIdQuantityObject = mapOf(
+                    "coffee_1" to 2,
+                    "coffee_2" to 1,
+                    "pastry_1" to 1
+                ),
+                totalCost = 14.20
+            )
+        )
+    }
+
+    fun updateQuantity(itemId: String, delta: Int) {
+        val updatedItems = orderState.itemIdQuantityObject.toMutableMap().apply {
+            val newQty = (this[itemId] ?: 0) + delta
+            if (newQty > 0) put(itemId, newQty) else remove(itemId)
+        }
+        val newTotal = updatedItems.entries.sumOf { (id, qty) ->
+            (sampleMenuItems[id]?.itemPrice ?: 0.0) * qty
+        }
+        orderState = orderState.copy(
+            itemIdQuantityObject = updatedItems,
+            totalCost = newTotal
+        )
+    }
 
     BasketList(
-        orderDC = sampleOrder,
+        orderDC = orderState,
         collectItemDC = { itemId ->
-            sampleMenuItems[itemId] ?: ItemDataClass("Unknown Item", 0.0, "")
+            sampleMenuItems[itemId] ?: ItemDataClass(
+                itemName = "Unknown Item",
+                itemPrice = 0.0,
+                itemDescription = ""
+            )
         },
         collectMenuAvailability = { _, itemId ->
             itemId != "pastry_1"
+        },
+        onAddOneToOrder = { itemId -> updateQuantity(itemId, +1) },
+        onRemoveOneToOrder = { itemId -> updateQuantity(itemId, -1) },
+        onClearBasket = {
+            orderState = orderState.copy(
+                itemIdQuantityObject = emptyMap(),
+                totalCost = 0.0
+            )
         }
     )
 }

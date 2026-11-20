@@ -93,11 +93,12 @@ fun LocationItem(
 
 }
 
-val testLocationClass = LocationDataClass(
-    "Test Cafe",
-    null,
-    "Test description, hopefully not too long",
-    AddressDataClass(
+private val testLocationClass = LocationDataClass(
+    id = "loc_1",
+    cafeName = "Test Cafe",
+    cafeCoordinates = null,
+    cafeDescription = "Test description, hopefully not too long",
+    streetAddress = AddressDataClass(
         "Unit 1",
         "1 Test Street",
         "Test City",
@@ -105,25 +106,29 @@ val testLocationClass = LocationDataClass(
         "TE11 1TE"
     )
 )
-val testLocationClass3 = LocationDataClass(
-    "Test Cafe 3",
-    null,
-    "Test description, hopefully not too long",
-    AddressDataClass(
+
+private val testLocationClass2 = LocationDataClass(
+    id = "loc_2",
+    cafeName = "Test Cafe 2",
+    cafeCoordinates = null,
+    cafeDescription = "Test description, definitely should be too long",
+    streetAddress = AddressDataClass(
+        "Unit 1",
+        "1 Test Street",
+        "Test City",
+        "Test County",
+        "TE11 1TE"
+    )
+)
+
+private val testLocationClass3 = LocationDataClass(
+    id = "loc_3",
+    cafeName = "Test Cafe 3",
+    cafeCoordinates = null,
+    cafeDescription = "Test description, hopefully not too long",
+    streetAddress = AddressDataClass(
         "3 Test Street",
         "",
-        "Test City",
-        "Test County",
-        "TE11 1TE"
-    )
-)
-val testLocationClass2 = LocationDataClass(
-    "Test Cafe 2",
-    null,
-    "Test description, definitely should be too long",
-    AddressDataClass(
-        "Unit 1",
-        "1 Test Street",
         "Test City",
         "Test County",
         "TE11 1TE"

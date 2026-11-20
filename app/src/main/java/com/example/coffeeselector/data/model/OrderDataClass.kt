@@ -1,5 +1,6 @@
 package com.example.coffeeselector.data.model
 
+import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.ServerTimestamp
 import java.time.LocalDateTime
@@ -9,6 +10,8 @@ import java.util.Date
 import java.util.Locale
 
 data class OrderDataClass(
+    @DocumentId
+    val id: String = "",
     val userId: String = "",
     val locationId: String = "",
     val customerEmail: String = "",
@@ -43,22 +46,21 @@ data class OrderDataClass(
             DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm", Locale.UK)
         )
 
+    fun Date.toLocalDateTime(zoneId: ZoneId = ZoneId.systemDefault()): LocalDateTime {
+        return this.toInstant()
+            .atZone(zoneId)
+            .toLocalDateTime()
+    }
     @get:Exclude
-    val statusMessage = if(!canceled){
-        if(dateTimeOrderCollected != null){
-            "Completed"
-        } else if(dateTimeOrderFinished != null){
-            "Ready To Collect"
-        } else if(dateTimeOrderInitiated != null){
-            "Processing"
-        } else "Incomplete"
-    } else "Canceled"
+    val statusMessage: String
+        get() = when {
+            canceled -> "Canceled"
+            dateTimeOrderCollected != null -> "Completed"
+            dateTimeOrderFinished != null -> "Ready To Collect"
+            dateTimeOrderInitiated != null -> "Processing"
+            else -> "Incomplete"
+        }
 }
 
-fun Date.toLocalDateTime(zoneId: ZoneId = ZoneId.systemDefault()): LocalDateTime {
-    return this.toInstant()
-        .atZone(zoneId)
-        .toLocalDateTime()
-}
 
 

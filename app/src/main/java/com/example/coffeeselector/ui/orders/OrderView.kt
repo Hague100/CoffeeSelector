@@ -308,7 +308,7 @@ fun OrderItem(
                         .padding(end = 8.dp)
                 )
             }
-            Row() {
+            Row {
                 Text(text = description, fontSize = 10.sp, color = Color.Gray,
                     modifier = Modifier.weight(2f))
                 Text(text = "(${itemDC.formattedPrice} * $quantity) = ${itemDC.formattedPriceMulti(quantity)}", textAlign = TextAlign.End,

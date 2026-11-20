@@ -16,5 +16,6 @@ data class UserDataClass(
     val address: AddressDataClass? = null,
     val dateOfBirth: Date? = null,
     val recentOrders: List<String>? = null,
-    val unfinishedOrder: String? = null
+    val unfinishedOrder: String? = null,
+    val notificationsId:  List<String>? = null
 )

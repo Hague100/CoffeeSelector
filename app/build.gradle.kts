@@ -42,6 +42,7 @@ android {
 }
 
 dependencies {
+    implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.firebase.firestore)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.firebase.database.ktx)

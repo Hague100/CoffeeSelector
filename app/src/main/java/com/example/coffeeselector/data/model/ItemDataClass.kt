@@ -9,8 +9,7 @@ data class ItemDataClass(
     val id: String = "",
     val itemName: String = "",
     val itemPrice: Double = 0.0,
-    val itemDescription: String = "",
-    val customizerMaxObject: Map<String, Int> = emptyMap()
+    val itemDescription: String = ""
 ) {
     @get:Exclude
     val formattedPrice: String

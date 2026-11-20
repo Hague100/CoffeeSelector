@@ -2,7 +2,6 @@ package com.example.coffeeselector.data.model
 
 import com.google.firebase.firestore.DocumentId
 import com.google.firebase.firestore.Exclude
-import com.google.firebase.firestore.ServerTimestamp
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -16,7 +15,6 @@ data class OrderDataClass(
     val locationId: String = "",
     val customerEmail: String = "",
     val itemIdQuantityObject: Map<String, Int> = emptyMap(),
-    @ServerTimestamp
     val dateTimeOrderInitiated: Date? = null,
     val dateTimeOrderFinished: Date? = null,
     val dateTimeOrderCollected: Date? = null,

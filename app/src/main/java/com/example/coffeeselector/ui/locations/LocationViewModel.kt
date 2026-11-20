@@ -23,10 +23,7 @@ class LocationViewModel: ViewModel() {
 
     fun getLocationsListData(){
         viewModelScope.launch {
-            val (isSuccess, message, locationList) = locationRepository.readLocationDataReturnList()
-            _statusMessage.value = message
-            if(isSuccess) _locationsListState.value = locationList
-            else _locationsListState.value = emptyList()
+            // TODO:  
         }
     }
 }

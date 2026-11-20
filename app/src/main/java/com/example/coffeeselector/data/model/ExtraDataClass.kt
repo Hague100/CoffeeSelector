@@ -1,6 +1,9 @@
 package com.example.coffeeselector.data.model
 
+import com.google.firebase.firestore.DocumentId
+
 data class ExtraDataClass(
+    @DocumentId
     val extraId: String,
     val extraDescription: String,
     val extraName: String,

@@ -20,12 +20,12 @@ class AuthViewModel : ViewModel() {
     fun registerUserData(email: String, password: String, firstName: String, lastName: String, username: String, phoneNo: String, report: (Boolean, String) -> Unit) {
         register(email, password) { isSuccess, authMessage ->
             if (isSuccess) {
-                val userData = UserDataClass(username, NameDataClass(firstName, lastName), phoneNo)
                 val userDocId = auth.currentUser?.uid
+                val userData = UserDataClass(userDocId.toString(), username, NameDataClass(firstName, lastName), phoneNo)
                 if (userDocId != null) {
-                    userRepository.createUserData(userData, userDocId) { isDocSuccess, docMessage ->
+                    userRepository.createUserData(userData) { isDocSuccess, docMessage ->
                         if (isDocSuccess) {
-                            report(true, "completely successfully.")
+                            report(true, "Registration completely successfully.")
                         } else {
                             report(false, docMessage)
                         }

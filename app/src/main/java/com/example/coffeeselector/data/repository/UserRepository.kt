@@ -16,8 +16,12 @@ import kotlinx.coroutines.tasks.await
 
 class UserRepository {
     private val database = Firebase.firestore
-    fun createUserData(userData: UserDataClass, userDocId: String, onResult: (Boolean, String) -> Unit) {
-        database.collection("users").document(userDocId).set(userData)
+    fun createUserData(userData: UserDataClass, onResult: (Boolean, String) -> Unit) {
+        if (userData.id.isBlank()) {
+            onResult(false, "User ID cannot be empty")
+            return
+        }
+        database.collection("users").document().set(userData)
             .addOnSuccessListener { onResult(true, "Data added") }
             .addOnFailureListener { onResult(false, "Data not added") }
     }

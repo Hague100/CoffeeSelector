@@ -38,12 +38,8 @@ class ItemRepository {
         return try {
             val documentSnapshot = database.collection("items").document(docId).get().await()
             val item = documentSnapshot.toObject<ItemDataClass>()
-
-            if (documentSnapshot.exists() && item != null) {
-                Result.success(item)
-            } else {
-                Result.failure(NoSuchElementException("No Item Found"))
-            }
+            if (documentSnapshot.exists() && item != null) Result.success(item)
+            else Result.failure(NoSuchElementException("No Item Found"))
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {

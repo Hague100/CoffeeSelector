@@ -2,13 +2,12 @@ package com.example.coffeeselector.data.repository
 
 
 import com.example.coffeeselector.data.model.OrderDataClass
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.tasks.await
+import java.util.Date
 import kotlin.coroutines.cancellation.CancellationException
 
 class OrderRepository(
@@ -16,11 +15,44 @@ class OrderRepository(
     private val auth: FirebaseAuth
 ) {
     private val ordersCollection = database.collection("orders")
+    private val usersCollection = database.collection("users")
     private fun getCurrentUserId(): String? = auth.currentUser?.uid
 
-    suspend fun createOrderData(orderDC: OrderDataClass): Result<Unit>{
+    suspend fun createOrderData(orderDC: OrderDataClass): Result<String> {
+        val uid = getCurrentUserId()
+            ?: return Result.failure(IllegalStateException("User not logged in"))
         return try {
-            ordersCollection.document().set(orderDC).await()
+            val docRef = ordersCollection.document()
+            val orderWithUser = orderDC.copy(userId = uid)
+            database.runBatch { batch ->
+                batch.set(docRef, orderWithUser)
+                if (orderWithUser.dateTimeOrderInitiated == null) {
+                    batch.update(usersCollection.document(uid), "unfinishedOrder", docRef.id)
+                }
+            }.await()
+            Result.success(docRef.id)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    suspend fun submitOrder(docId: String): Result<Unit> {
+        val uid = getCurrentUserId()
+            ?: return Result.failure(IllegalStateException("User not logged in"))
+
+        return try {
+            database.runBatch { batch ->
+                batch.update(ordersCollection.document(docId), "dateTimeOrderInitiated", Date())
+                batch.update(
+                    usersCollection.document(uid),
+                    mapOf(
+                        "unfinishedOrder" to null,
+                        "recentOrders" to FieldValue.arrayUnion(docId)
+                    )
+                )
+            }.await()
             Result.success(Unit)
         } catch (e: CancellationException) {
             throw e
@@ -47,7 +79,8 @@ class OrderRepository(
         val uid = getCurrentUserId()
             ?: return Result.failure(Exception("User not logged in"))
         return try{
-            val collection = ordersCollection.whereEqualTo("userId", uid).get().await()
+            val collection = ordersCollection.whereEqualTo("userId", uid)
+                .whereNotEqualTo("dateTimeOrderInitiated", null).get().await()
             if (!collection.isEmpty) {
                 val orderList = collection.documents.mapNotNull { documentSnapshot ->
                     documentSnapshot.toObject<OrderDataClass>()
@@ -82,4 +115,22 @@ class OrderRepository(
             Result.failure(e)
         }
     }
+
+    suspend fun deleteDraftOrder(docId: String): Result<Unit> {
+        val uid = getCurrentUserId()
+            ?: return Result.failure(IllegalStateException("User not logged in"))
+
+        return try {
+            database.runBatch { batch ->
+                batch.delete(ordersCollection.document(docId))
+                batch.update(usersCollection.document(uid), "unfinishedOrder", null)
+            }.await()
+            Result.success(Unit)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
 }

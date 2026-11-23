@@ -10,6 +10,5 @@ data class LocationDataClass(
     val cafeCoordinates: GeoPoint? = null,
     val cafeDescription: String? = null,
     val streetAddress: AddressDataClass? = null,
-    val menuStockQuantity: List<Pair<String, Boolean>>? = null,
-    val extraAvailability: List<Pair<String, Boolean>>? = null
+    val menuStockQuantity: Map<String, Boolean> = emptyMap(),
     )

@@ -1,9 +1,7 @@
 package com.example.coffeeselector.data.repository
 
 import com.example.coffeeselector.data.model.ItemDataClass
-import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.tasks.await
 import kotlin.coroutines.cancellation.CancellationException
@@ -11,6 +9,7 @@ import kotlin.coroutines.cancellation.CancellationException
 class ItemRepository(
     private val database: FirebaseFirestore
 ) {
+    private val itemsCollection = database.collection("items")
     /**
      * https://rockthejvm.com/articles/functional-error-handling-in-kotlin-part-2-result-and-either
      * Method	What it does
@@ -37,7 +36,7 @@ class ItemRepository(
 //    }
     suspend fun readItem(docId: String): Result<ItemDataClass> {
         return try {
-            val documentSnapshot = database.collection("items").document(docId).get().await()
+            val documentSnapshot = itemsCollection.document(docId).get().await()
             val item = documentSnapshot.toObject<ItemDataClass>()
             if (documentSnapshot.exists() && item != null) Result.success(item)
             else Result.failure(NoSuchElementException("No Item Found"))
@@ -47,4 +46,5 @@ class ItemRepository(
             Result.failure(e)
         }
     }
+
 }

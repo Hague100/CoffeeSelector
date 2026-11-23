@@ -1,14 +1,14 @@
 package com.example.coffeeselector.ui.profile
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.coffeeselector.data.model.UserDataClass
 import com.example.coffeeselector.data.repository.UserRepository
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 
 /**
  *https://developer.android.com/topic/libraries/architecture/viewmodel
@@ -16,7 +16,8 @@ import kotlinx.coroutines.launch
  */
 class ProfileViewModel : ViewModel() {
     private val auth = FirebaseAuth.getInstance()
-    private val userRepository = UserRepository()
+    private val database = Firebase.firestore
+    private val userRepository = UserRepository(database,auth)
     private val userDocId = auth.currentUser?.uid
     private val _userState = MutableStateFlow<UserDataClass?>(null)
     val userData: StateFlow<UserDataClass?> get() = _userState.asStateFlow()
@@ -40,16 +41,16 @@ class ProfileViewModel : ViewModel() {
 
 
     fun getUserData(){
-        val currentUserDocId = userDocId
-        if (currentUserDocId != null){
-            viewModelScope.launch {
-                val (isSuccess, message, userDC) = userRepository.readUserData(currentUserDocId)
-                if(isSuccess && userDC != null){
-                    _userState.value = userDC
-                }
-                _statusMessage.value = message
-            }
-        } else _statusMessage.value = "No user logged in"
+//        val currentUserDocId = userDocId
+//        if (currentUserDocId != null){
+//            viewModelScope.launch {
+//                val (isSuccess, message, userDC) = userRepository.readUser()
+//                if(isSuccess && userDC != null){
+//                    _userState.value = userDC as UserDataClass?
+//                }
+//                _statusMessage.value = message
+//            }
+//        } else _statusMessage.value = "No user logged in"
     }
 }
 

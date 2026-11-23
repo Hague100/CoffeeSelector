@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -38,10 +39,6 @@ fun LocationItem(
     distance: String?,
     onNavigateToMenu: () -> Unit
 ){
-    val description = locationDC.cafeDescription?.let { desc ->
-        if (desc.length < 41) " $desc" else {desc.take(38)+"..."}
-    } ?: ""
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -69,7 +66,8 @@ fun LocationItem(
                         .padding(start = 10.dp)
                         .fillMaxWidth(0.5f)
                 ) {
-                    Text(text = description, fontSize = 10.sp, color = Color.Gray)
+                    Text(text = locationDC.cafeDescription.orEmpty(), fontSize = 10.sp,
+                        color = Color.Gray, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     if(locationDC.streetAddress == null) {
                         Text(text = "No Listed Address")
                     } else {
@@ -157,7 +155,7 @@ fun LocationList(
         verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        items(locations) { location ->
+        items(items = locations, key = {it.id} ) { location ->
             LocationItem(
                 locationDC = location,
                 distance = distanceCalculation(location),

@@ -19,15 +19,14 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.coffeeselector.ui.LocationListRoute
 import com.example.coffeeselector.ui.LoginRoute
-import com.example.coffeeselector.ui.NoUserHomeRoute
 import com.example.coffeeselector.ui.ProfileRoute
 import com.example.coffeeselector.ui.RegisterRoute
 import com.example.coffeeselector.ui.UserHomeRoute
 import com.example.coffeeselector.ui.auth.LoginScreen
 import com.example.coffeeselector.ui.auth.AuthViewModel
 import com.example.coffeeselector.ui.auth.RegisterScreen
-import com.example.coffeeselector.ui.home.NoUserHomeScreen
-import com.example.coffeeselector.ui.home.UserHomeScreen
+import com.example.coffeeselector.ui.locations.LocationList
+import com.example.coffeeselector.ui.locations.LocationViewModel
 import com.example.coffeeselector.ui.profile.ProfileViewModel
 import com.example.coffeeselector.ui.profile.UserProfile
 import com.google.firebase.auth.FirebaseAuth
@@ -62,32 +61,9 @@ class MainActivity : ComponentActivity() {
             Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                 NavHost(
                     navController = navController,
-                    startDestination = if(user != null) UserHomeRoute else NoUserHomeRoute,
-                    modifier = Modifier
+                    startDestination = LocationListRoute,
+                    modifier = Modifier.padding(innerPadding)
                 ) {
-                    composable<NoUserHomeRoute> {
-                        NoUserHomeScreen(
-                            { navController.navigate(LoginRoute) },
-                            { navController.navigate(RegisterRoute) },
-                            {TODO()},
-                            modifier = Modifier.padding(innerPadding)
-                        )
-                    }
-
-                    composable<UserHomeRoute> {
-                        val logOutViewModel: AuthViewModel = viewModel()
-                        UserHomeScreen(
-                            {navController.navigate(ProfileRoute)},
-                            {TODO()},
-                            {logOutViewModel.logout()},
-                            {
-                                user = FirebaseAuth.getInstance().currentUser
-                                navController.navigate(NoUserHomeRoute) {
-                                    popUpTo(0) {inclusive = true}
-                                }
-                            }
-                        )
-                    }
                     composable<LoginRoute> {
                         val loginViewModel: AuthViewModel = viewModel()
                         LoginScreen(
@@ -166,7 +142,26 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable<LocationListRoute> {
+                        val viewModel: LocationViewModel = viewModel()
+                        val locations by viewModel.locationsListData.collectAsStateWithLifecycle()
+                        val statusMessage by viewModel.statusMessage.collectAsStateWithLifecycle()
 
+                        LaunchedEffect(statusMessage) {
+                            if (!statusMessage.isNullOrBlank()) {
+                                Toast.makeText(application, statusMessage, Toast.LENGTH_SHORT).show()
+                            }
+                        }
+
+                        LocationList(
+                            locations = locations,
+                            distanceCalculation = { cafe ->
+                                ""
+                            },
+                            onNavigateToMenu = { selectedLocation ->
+                                viewModel.selectLocation(selectedLocation.id)
+                                // TODO: navController.navigate(MenuRoute(selectedLocation.id))
+                            }
+                        )
                     }
                 }
             }

@@ -2,14 +2,15 @@ package com.example.coffeeselector.data.repository
 
 import com.example.coffeeselector.data.model.ItemDataClass
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.tasks.await
 import kotlin.coroutines.cancellation.CancellationException
 
-class ItemRepository {
-
-    private val database = Firebase.firestore
+class ItemRepository(
+    private val database: FirebaseFirestore
+) {
     /**
      * https://rockthejvm.com/articles/functional-error-handling-in-kotlin-part-2-result-and-either
      * Method	What it does

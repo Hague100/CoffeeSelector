@@ -1,10 +1,9 @@
 package com.example.coffeeselector.data.repository
 
-import com.example.coffeeselector.data.model.NotificationDataClass
 import com.example.coffeeselector.data.model.UserDataClass
-import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
-import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.tasks.await
 import kotlin.coroutines.cancellation.CancellationException
@@ -17,11 +16,16 @@ import kotlin.coroutines.cancellation.CancellationException
  * https://firebase.google.com/docs/firestore/query-data/get-data
  */
 
-class UserRepository {
-    private val database = Firebase.firestore
+class UserRepository(
+    database: FirebaseFirestore,
+    private val auth: FirebaseAuth) {
+    private val usersCollection = database.collection("users")
+    private fun getCurrentUserId(): String? = auth.currentUser?.uid
     suspend fun createUser(userDC: UserDataClass): Result<Unit>{
+        val uid = getCurrentUserId()
+            ?: return Result.failure(IllegalStateException("User not authenticated"))
         return try {
-            database.collection("users").document().set(userDC).await()
+            usersCollection.document(uid).set(userDC).await()
             Result.success(Unit)
         } catch (e: CancellationException) {
             throw e
@@ -29,9 +33,11 @@ class UserRepository {
             Result.failure(e)
         }
     }
-    suspend fun readUser(docId: String): Result<UserDataClass> {
+    suspend fun readUser(): Result<UserDataClass> {
+        val uid = getCurrentUserId()
+            ?: return Result.failure(IllegalStateException("User not authenticated"))
         return try {
-            val documentSnapshot = database.collection("users").document(docId).get().await()
+            val documentSnapshot = usersCollection.document(uid).get().await()
             val user = documentSnapshot.toObject<UserDataClass>()
             if (documentSnapshot.exists() && user != null) {
                 Result.success(user)
@@ -42,9 +48,11 @@ class UserRepository {
             Result.failure(e)
         }
     }
-    suspend fun updateUserAttribute(docId: String, field: String, value: Any?): Result<Unit> {
+    suspend fun updateUserAttribute(field: String, value: Any?): Result<Unit> {
+        val uid = getCurrentUserId()
+            ?: return Result.failure(IllegalStateException("User not authenticated"))
         return try {
-            database.collection("users").document(docId).update(field, value).await()
+            usersCollection.document(uid).update(field, value).await()
             Result.success(Unit)
         } catch (e: CancellationException) {
             throw e
@@ -52,9 +60,11 @@ class UserRepository {
             Result.failure(e)
         }
     }
-    suspend fun deleteUserAttribute(docId: String, field: String): Result<Unit> {
+    suspend fun deleteUserAttribute(field: String): Result<Unit> {
+        val uid = getCurrentUserId()
+            ?: return Result.failure(IllegalStateException("User not authenticated"))
         return try {
-            database.collection("users").document(docId).update(field, FieldValue.delete()).await()
+            usersCollection.document(uid).update(field, FieldValue.delete()).await()
             Result.success(Unit)
         } catch (e: CancellationException) {
             throw e

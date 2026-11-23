@@ -1,14 +1,15 @@
 package com.example.coffeeselector.data.repository
 
 import com.example.coffeeselector.data.model.NotificationDataClass
-import com.google.firebase.Firebase
-import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.tasks.await
 import kotlin.coroutines.cancellation.CancellationException
 
-class NotificationRepository {
-    private val database = Firebase.firestore
+class NotificationRepository(
+    private val database: FirebaseFirestore
+) {
+
 
     suspend fun createNotification(notificationDC: NotificationDataClass): Result<Unit>{
         return try {

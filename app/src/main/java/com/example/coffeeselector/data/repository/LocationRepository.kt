@@ -1,17 +1,14 @@
 package com.example.coffeeselector.data.repository
 
 import com.example.coffeeselector.data.model.LocationDataClass
-import com.google.firebase.Firebase
-import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.tasks.await
 import kotlin.coroutines.cancellation.CancellationException
 
-class LocationRepository {
-
-    private val database = Firebase.firestore
-
-
+class LocationRepository(
+    private val database: FirebaseFirestore
+){
     suspend fun readLocationData(docId: String): Result<LocationDataClass> {
         return try {
             val documentSnapshot = database.collection("locations").document(docId).get().await()

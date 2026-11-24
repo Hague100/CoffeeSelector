@@ -64,7 +64,7 @@ private fun NavTopBarButton(
 }
 
 @Composable
-fun NavigationTopBar(
+fun NavTopBar(
     unreadCount: Int = 0,
     onUserClick: () -> Unit = {},
     onLocationsClick: () -> Unit = {},
@@ -75,6 +75,7 @@ fun NavigationTopBar(
         modifier = Modifier
             .fillMaxWidth()
             .background(Color.LightGray)
+            .statusBarsPadding()
             .padding(vertical = 8.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceEvenly
@@ -110,6 +111,6 @@ fun NavigationTopBar(
 
 @Preview(showBackground = true)
 @Composable
-fun NavigationTopBarPreview() {
-    NavigationTopBar(unreadCount = 3)
+fun NavTopBarPreview() {
+    NavTopBar(unreadCount = 3)
 }

@@ -2,6 +2,7 @@ package com.example.coffeeselector.ui.items
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,9 +12,15 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,7 +33,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.coffeeselector.data.model.ItemDataClass
+import com.example.coffeeselector.data.repository.ItemRepository
+import com.example.coffeeselector.data.repository.OrderRepository
 
 @Composable
 fun ItemInMenuList(
@@ -250,4 +261,130 @@ fun MenuListPreview() {
         },
         onNavigateToItem = {}
     )
+}
+
+@Composable
+fun MenuScreen(
+    locationId: String,
+    menuItemsIdAndAvailability: List<Pair<String, Boolean>>,
+    unfinishedOrderId: String? = null,
+    itemRepository: ItemRepository,
+    orderRepository: OrderRepository,
+    onNavigateToItem: (String) -> Unit,
+    onOrderSubmitted: () -> Unit
+) {
+    val viewModel: ItemViewModel = viewModel(
+        factory = ItemViewModel.provideFactory(
+            itemRepository = itemRepository,
+            orderRepository = orderRepository
+        )
+    )
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(locationId, menuItemsIdAndAvailability, unfinishedOrderId) {
+        viewModel.initializeMenu(
+            locationId = locationId,
+            itemsIdAndAvailability = menuItemsIdAndAvailability,
+            unfinishedOrderId = unfinishedOrderId
+        )
+    }
+    LaunchedEffect(uiState.orderSubmitted) {
+        if (uiState.orderSubmitted) {
+            onOrderSubmitted()
+        }
+    }
+
+    Scaffold(
+        bottomBar = {
+            // Show checkout bar whenever there is at least 1 item in the order
+            if (uiState.totalItemCount > 0) {
+                Surface(shadowElevation = 8.dp) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            Text(
+                                text = "${uiState.totalItemCount} item(s)",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                text = uiState.formattedTotalCost,
+                                style = MaterialTheme.typography.titleLarge
+                            )
+                        }
+                        Button(
+                            onClick = { viewModel.submitCurrentOrder() },
+                            enabled = !uiState.isSavingOrder
+                        ) {
+                            Text(text = if (uiState.isSavingOrder) "Saving..." else "Submit Order")
+                        }
+                    }
+                }
+            }
+        }
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+        ) {
+            when {
+                uiState.isLoading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+
+                else -> {
+                    Column(modifier = Modifier.fillMaxSize()) {
+                        uiState.errorMessage?.let { error ->
+                            Surface(
+                                color = MaterialTheme.colorScheme.errorContainer,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    Text(
+                                        text = error,
+                                        color = MaterialTheme.colorScheme.onErrorContainer,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    TextButton(onClick = { viewModel.clearError() }) {
+                                        Text("Dismiss")
+                                    }
+                                }
+                            }
+                        }
+
+                        // 5. Pass ViewModel state & callbacks into your MenuList
+                        MenuList(
+                            menuItemsIdAndAvailability = uiState.menuItemsIdAndAvailability,
+                            collectedItemDataClass = { id ->
+                                uiState.loadedItems[id] ?: ItemDataClass(
+                                    id = id,
+                                    itemName = "Unavailable Item",
+                                    itemPrice = 0.0,
+                                    itemDescription = ""
+                                )
+                            },
+                            itemInOrderCheck = { id ->
+                                (uiState.itemQuantities[id] ?: 0) > 0
+                            },
+                            onAddItemToOrder = { id ->
+                                viewModel.addItemToOrder(id)
+                            },
+                            onRemoveItemToOrder = { id ->
+                                viewModel.removeItemFromOrder(id)
+                            },
+                            onNavigateToItem = onNavigateToItem
+                        )
+                    }
+                }
+            }
+        }
+    }
 }

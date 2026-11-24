@@ -20,20 +20,6 @@ class ItemRepository(
      * .isSuccess / .isFailure	Boolean checks if you prefer standard if/else statements.
      *
      */
-//    suspend fun readItem(docId: String): Triple<Boolean, String, ItemDataClass?> {
-//        val onResult: Triple<Boolean, String, ItemDataClass?> = try {
-//            val documentSnapshot = database.collection("items").document(docId).get().await()
-//            val item = documentSnapshot.toObject<ItemDataClass>()
-//
-//            if(documentSnapshot.exists() && item != null) Triple(true, "Data fetched successfully", item)
-//            else Triple(false, "No Item Found", null)
-//        }catch (e: CancellationException) {
-//            throw e
-//        } catch (e: Exception) {
-//            Triple(false, "Error Occurred", null)
-//        }
-//        return onResult
-//    }
     suspend fun readItem(docId: String): Result<ItemDataClass> {
         return try {
             val documentSnapshot = itemsCollection.document(docId).get().await()

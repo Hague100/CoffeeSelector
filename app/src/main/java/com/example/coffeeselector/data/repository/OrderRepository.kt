@@ -133,4 +133,22 @@ class OrderRepository(
         }
     }
 
+    suspend fun updateOrderItemsAndCost(
+        docId: String,
+        items: Map<String, Int>,
+        totalCost: Double
+    ): Result<Unit> = try {
+        ordersCollection.document(docId).update(
+            mapOf(
+                "itemIdQuantityObject" to items,
+                "totalCost" to totalCost
+            )
+        ).await()
+        Result.success(Unit)
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
+
 }

@@ -11,25 +11,25 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
+import com.example.coffeeselector.data.repository.ItemRepository
+import com.example.coffeeselector.data.repository.OrderRepository
 import com.example.coffeeselector.ui.LocationListRoute
-import com.example.coffeeselector.ui.LoginRoute
-import com.example.coffeeselector.ui.ProfileRoute
-import com.example.coffeeselector.ui.RegisterRoute
-import com.example.coffeeselector.ui.UserHomeRoute
-import com.example.coffeeselector.ui.auth.LoginScreen
-import com.example.coffeeselector.ui.auth.AuthViewModel
-import com.example.coffeeselector.ui.auth.RegisterScreen
+import com.example.coffeeselector.ui.MenuRoute
+import com.example.coffeeselector.ui.items.MenuScreen
 import com.example.coffeeselector.ui.locations.LocationList
 import com.example.coffeeselector.ui.locations.LocationViewModel
-import com.example.coffeeselector.ui.profile.ProfileViewModel
-import com.example.coffeeselector.ui.profile.UserProfile
+import com.example.coffeeselector.ui.navigation.NavTopBar
+import com.example.coffeeselector.ui.navigation.NavigationViewModel
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 
 /**
@@ -51,96 +51,51 @@ import com.google.firebase.auth.FirebaseAuth
  * This will be my guide for checking what users are logged in
  * https://firebase.google.com/docs/auth/web/manage-users#web_2
  */
+/**
+ * guide for state management:
+ * https://developers.arcgis.com/kotlin/programming-patterns/manage-geoview-state/#using-the-viewmodel-in-a-composable
+ *
+ */
 class MainActivity : ComponentActivity() {
-    private var user =  FirebaseAuth.getInstance().currentUser
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
-            Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+            val db = remember { FirebaseFirestore.getInstance() }
+            val auth = remember { FirebaseAuth.getInstance() }
+            val itemRepository = remember { ItemRepository(db) }
+            val orderRepository = remember { OrderRepository(db, auth) }
+
+            val navigationViewModel: NavigationViewModel = viewModel(
+                factory = NavigationViewModel.provideFactory(db, auth)
+            )
+            val unreadCount by navigationViewModel.unreadNotificationCount.collectAsStateWithLifecycle()
+            Scaffold(
+                modifier = Modifier.fillMaxSize(),
+                topBar = {
+                    NavTopBar(
+                        unreadCount = unreadCount,
+                        onUserClick = { // navController.navigate(UserRoute) { launchSingleTop = true }
+                        },
+                        onLocationsClick = {
+                            navController.navigate(LocationListRoute) {
+                                popUpTo(LocationListRoute) { inclusive = true }
+                                launchSingleTop = true
+                            }
+                        },
+                        onNotificationsClick = { // navController.navigate(NotificationsRoute) { launchSingleTop = true }
+                        },
+                        onOrdersClick = { // navController.navigate(OrdersRoute) { launchSingleTop = true }
+                        }
+                    )
+                }
+            ) { innerPadding ->
                 NavHost(
                     navController = navController,
                     startDestination = LocationListRoute,
                     modifier = Modifier.padding(innerPadding)
                 ) {
-                    composable<LoginRoute> {
-                        val loginViewModel: AuthViewModel = viewModel()
-                        LoginScreen(
-                            onLogin = {email, password ->
-                                loginViewModel.login(email, password) { isSuccess, message ->
-                                    Toast.makeText(application, message, Toast.LENGTH_SHORT).show()
-                                    if (isSuccess) {
-                                        navController.navigate(UserHomeRoute) {
-                                            popUpTo(0) {inclusive = true}
-                                        }
-                                    }
-                                }
-                            } , {navController.navigate(RegisterRoute)}
-                        )
-                    }
-                    composable<RegisterRoute> {
-                        val registerViewModel: AuthViewModel = viewModel()
-                        RegisterScreen(
-                            onRegisterUserData = {email, password, firstName, lastName, username, phoneNo ->
-                                registerViewModel.registerUserData(email, password, firstName, lastName, username, phoneNo ) { isSuccess, message ->
-                                    Toast.makeText(application, message, Toast.LENGTH_SHORT).show()
-                                    if(isSuccess) {
-                                        navController.navigate(UserHomeRoute) {
-                                            popUpTo(0) {inclusive = true}
-                                        }
-                                    }
-
-                                }
-                            },
-
-                        )
-                    }
-
-//                    composable<ProfileRoute> {
-//                        val profileViewModel: ProfileViewModel = viewModel()
-//                        profileViewModel.getUserDataClass() { isSuccess, message,  ->
-//                            if (isSuccess){
-//                                Toast.makeText(application, message, Toast.LENGTH_SHORT).show()
-//                            } else Toast.makeText(application, message, Toast.LENGTH_SHORT).show()
-//                        }
-//                        UserProfile(
-//                            profileViewModel.userData,
-//                            {},
-//                            {}
-//                        )
-//                    }
-                    /**
-                     * guide for state management:
-                     * https://developers.arcgis.com/kotlin/programming-patterns/manage-geoview-state/#using-the-viewmodel-in-a-composable
-                     *
-                     */
-                    composable<ProfileRoute> {
-                        val profileViewModel: ProfileViewModel = viewModel()
-                        val statusMessage by profileViewModel.statusMessage.collectAsStateWithLifecycle()
-                        val userData by profileViewModel.userData.collectAsStateWithLifecycle()
-                        /**
-                         * talks about why to use launch effects
-                         * https://composables.com/blog/side-effects
-                         */
-                        LaunchedEffect(statusMessage) {
-                            val currentMessage = statusMessage
-                            currentMessage?.isNotBlank()?.let { it1 ->
-                                if(it1)
-                                    Toast.makeText(application, statusMessage, Toast.LENGTH_SHORT).show()
-                            }
-                        }
-
-                        userData?.let {
-                            UserProfile(
-                                it,
-                                {},
-                                {}
-                            )
-                        }
-
-                    }
-
                     composable<LocationListRoute> {
                         val viewModel: LocationViewModel = viewModel()
                         val locations by viewModel.locationsListData.collectAsStateWithLifecycle()
@@ -154,20 +109,42 @@ class MainActivity : ComponentActivity() {
 
                         LocationList(
                             locations = locations,
-                            distanceCalculation = { cafe ->
-                                ""
-                            },
+                            distanceCalculation = { cafe -> "" },
                             onNavigateToMenu = { selectedLocation ->
                                 viewModel.selectLocation(selectedLocation.id)
-                                // TODO: navController.navigate(MenuRoute(selectedLocation.id))
+                                val stockEntries = selectedLocation.menuStockQuantity.toList()
+                                navController.navigate(
+                                    MenuRoute(
+                                        locationId = selectedLocation.id,
+                                        itemIds = stockEntries.map { it.first },
+                                        itemAvailabilities = stockEntries.map { it.second }
+                                    )
+                                )
+                            }
+                        )
+                    }
+
+                    composable<MenuRoute> { backStackEntry ->
+                        val route: MenuRoute = backStackEntry.toRoute()
+                        val itemsAndAvailability = route.itemIds.zip(route.itemAvailabilities)
+
+                        MenuScreen(
+                            locationId = route.locationId,
+                            menuItemsIdAndAvailability = itemsAndAvailability,
+                            itemRepository = itemRepository,
+                            orderRepository = orderRepository,
+                            onNavigateToItem = { itemId ->
+                                // navController.navigate(ItemDetailRoute(itemId))
+                            },
+                            onOrderSubmitted = {
+                                navController.popBackStack()
                             }
                         )
                     }
                 }
             }
-
         }
     }
-
 }
+
 

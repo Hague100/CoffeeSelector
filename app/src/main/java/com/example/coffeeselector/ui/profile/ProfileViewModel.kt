@@ -35,12 +35,12 @@ class ProfileViewModel : ViewModel() {
      * guide on using coroutines in viewModel scope
      * https://developer.android.com/kotlin/coroutines#use-coroutines-for-main-safety
      */
-    init {
-        getUserData()
-    }
-
-
-    fun getUserData(){
+//    init {
+//        getUserData()
+//    }
+//
+//
+//    fun getUserData(){
 //        val currentUserDocId = userDocId
 //        if (currentUserDocId != null){
 //            viewModelScope.launch {
@@ -52,7 +52,7 @@ class ProfileViewModel : ViewModel() {
 //            }
 //        } else _statusMessage.value = "No user logged in"
     }
-}
+//}
 
 //    fun getUserDataClass(onResult: (Boolean, String) -> Unit) {
 //        if (userDocId != null){

@@ -5,21 +5,20 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
 import kotlinx.coroutines.tasks.await
 import kotlin.coroutines.cancellation.CancellationException
-
+/**
+ * https://rockthejvm.com/articles/functional-error-handling-in-kotlin-part-2-result-and-either
+ * Method	What it does
+ * Result.success(Unit)	Signals a void/write operation succeeded.
+ * Result.success(data)	Signals a read operation succeeded and attaches data.
+ * Result.failure(e)	Captures an exception without crashing the app.
+ * .fold(onSuccess, onFailure)	Handles both branches and returns a single result.
+ * .isSuccess / .isFailure	Boolean checks if you prefer standard if/else statements.
+ *
+ */
 class ItemRepository(
-    private val database: FirebaseFirestore
+    database: FirebaseFirestore
 ) {
     private val itemsCollection = database.collection("items")
-    /**
-     * https://rockthejvm.com/articles/functional-error-handling-in-kotlin-part-2-result-and-either
-     * Method	What it does
-     * Result.success(Unit)	Signals a void/write operation succeeded.
-     * Result.success(data)	Signals a read operation succeeded and attaches data.
-     * Result.failure(e)	Captures an exception without crashing the app.
-     * .fold(onSuccess, onFailure)	Handles both branches and returns a single result.
-     * .isSuccess / .isFailure	Boolean checks if you prefer standard if/else statements.
-     *
-     */
     suspend fun readItem(docId: String): Result<ItemDataClass> {
         return try {
             val documentSnapshot = itemsCollection.document(docId).get().await()

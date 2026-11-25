@@ -42,22 +42,14 @@ fun LocationItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .border(
-                width = 1.dp,
-                color = Color.Cyan
-            ),
+            .border(width = 1.dp, color = Color.Cyan),
         verticalAlignment = Alignment.CenterVertically,
-
     ){
         Column(modifier = Modifier.padding(5.dp)){
             Row(modifier = Modifier
                 .fillMaxWidth()) {
                 Text(text = locationDC.cafeName, fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp, modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 8.dp)
-                )
-
+                    fontSize = 20.sp, modifier = Modifier.weight(1f).padding(end = 8.dp))
                 Text(text = distance ?: "", textAlign = TextAlign.End)
             }
             Row() {
@@ -77,18 +69,15 @@ fun LocationItem(
                                 } else {""} + ", "
                         Text(text = line1And2, fontSize = 12.sp, softWrap = true)
                         Text(text = locationDC.streetAddress.postCode,  fontWeight = FontWeight.Bold)
-
                     }
                 }
                 Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.End,) {
-                    Button(onNavigateToMenu, modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(4.dp) ) { Text(text = "Menu")}
+                    Button(onNavigateToMenu, modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(4.dp) ) { Text(text = "Menu")}
                 }
             }
-
         }
     }
-
-
 }
 
 private val testLocationClass = LocationDataClass(
@@ -150,11 +139,9 @@ fun LocationList(
     distanceCalculation: (LocationDataClass) -> String,
     onNavigateToMenu: (LocationDataClass) -> Unit = {}
 ) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
+    LazyColumn(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally)
+    {
         items(items = locations, key = {it.id} ) { location ->
             LocationItem(
                 locationDC = location,

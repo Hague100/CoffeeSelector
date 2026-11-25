@@ -51,7 +51,7 @@ class BasketViewModel: ViewModel() {
     }
 
     fun addOneItemToBasket(locationId: String, itemId: String, itemPrice: Double) {
-        if (_isSyncing.value) return // Guard against rapid double-taps
+        if (_isSyncing.value) return
         val current = _incompleteOrder.value
 
         if (checkNeedToStartNewOrder(locationId)) {
@@ -70,7 +70,7 @@ class BasketViewModel: ViewModel() {
                 _isSyncing.value = true
                 try {
                     if (oldDraftId.isNotEmpty()) {
-                        orderRepository.deleteDraftOrder(oldDraftId)
+                        orderRepository.deleteUninitiatedOrder(oldDraftId)
                     }
                     orderRepository.createOrderData(newDraft).onSuccess { generatedDocId ->
                         _incompleteOrder.update { it?.copy(id = generatedDocId) }
@@ -122,7 +122,7 @@ class BasketViewModel: ViewModel() {
                 viewModelScope.launch {
                     _isSyncing.value = true
                     try {
-                        orderRepository.deleteDraftOrder(current.id)
+                        orderRepository.deleteUninitiatedOrder(current.id)
                     } finally {
                         _isSyncing.value = false
                     }
@@ -158,7 +158,7 @@ class BasketViewModel: ViewModel() {
             viewModelScope.launch {
                 _isSyncing.value = true
                 try {
-                    orderRepository.deleteDraftOrder(currentDraftId)
+                    orderRepository.deleteUninitiatedOrder(currentDraftId)
                 } finally {
                     _isSyncing.value = false
                 }
@@ -174,7 +174,7 @@ class BasketViewModel: ViewModel() {
             _isSyncing.value = true
             try {
                 val result = if (orderToSubmit.id.isNotEmpty()) {
-                    orderRepository.submitOrder(orderToSubmit.id)
+                    orderRepository.initiateOrder(orderToSubmit.id)
                 } else {
                     val finalizedOrder = orderToSubmit.copy(dateTimeOrderInitiated = Date())
                     orderRepository.createOrderData(finalizedOrder).map { }

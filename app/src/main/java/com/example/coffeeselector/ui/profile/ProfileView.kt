@@ -7,20 +7,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,9 +26,7 @@ import java.util.Date
 @Composable
 fun UserProfile(
     userDC: UserDataClass,
-    onNavigateToRecentOrders: () -> Unit,
-    onNavigateToPastOrders: () -> Unit,
-    modifier: Modifier = Modifier
+    onNavigateToLogOut: () -> Unit
 ) {
 
     Column(
@@ -84,12 +74,9 @@ fun UserProfile(
         Spacer(modifier = Modifier.height(20.dp))
         Row() {
             Button({
-                onNavigateToRecentOrders()
-            }) {Text("Recent Orders")}
-            Spacer(modifier = Modifier.width(20.dp))
-            Button({
-                onNavigateToPastOrders()
-            }) {Text("Past Orders")}
+                onNavigateToLogOut()
+            }) {Text("Log Out")}
+
         }
 
 
@@ -113,49 +100,7 @@ fun UserProfilePreview() {
 
     UserProfile(
         testUserDataClass,
-        {},
         {}
     )
 }
 
-@Composable
-fun UpdateUserProfile(
-    userDC: UserDataClass,
-    newUserData: (String, String, String, String, String) -> Unit
-){
-    var firstName by rememberSaveable { mutableStateOf(userDC.name.first) }
-    var lastName by rememberSaveable { mutableStateOf(userDC.name.last) }
-    var phoneNo by rememberSaveable { mutableStateOf(userDC.phoneNo) }
-    var addressLine1 by rememberSaveable { mutableStateOf(userDC.address?.line1 ?: "") }
-    var addressLine2 by rememberSaveable { mutableStateOf(userDC.address?.line2 ?: "") }
-    var addressCity by rememberSaveable { mutableStateOf(userDC.address?.city ?: "") }
-    var addressCounty by rememberSaveable { mutableStateOf(userDC.address?.county ?: "") }
-    var addressPostCode by rememberSaveable { mutableStateOf(userDC.address?.postCode ?: "") }
-
-    var dOB by rememberSaveable { mutableStateOf(userDC.dateOfBirth) }
-    var error by remember { mutableStateOf("") }
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(text = userDC.username, fontWeight = FontWeight.Bold, fontSize = 20.sp)
-        Spacer(modifier = Modifier.height(20.dp))
-        OutlinedTextField(firstName, { firstName = it }, label = { Text("First Name") },
-            singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text))
-        OutlinedTextField(lastName, { lastName = it }, label = { Text("Last Name") },
-            singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text))
-        OutlinedTextField(phoneNo, { phoneNo = it }, label = { Text("Phone Name") },
-            singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number))
-        Spacer(modifier = Modifier.height(20.dp))
-        Text(text = "Address:", fontSize = 15.sp)
-        OutlinedTextField(addressLine1, onValueChange = { addressLine1 = it }, label = { Text("Line 1")},
-            singleLine = true, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text))
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun UpdateUserProfilePreview(){
-    UpdateUserProfile(testUserDataClass, {_,_,_,_,_ ->})
-}

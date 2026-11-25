@@ -18,31 +18,10 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.util.Locale
 
-
-data class MenuUiState(
-    val isLoading: Boolean = false,
-    val isSavingOrder: Boolean = false,
-    val orderSubmitted: Boolean = false,
-    val errorMessage: String? = null,
-    val locationId: String = "",
-    val menuItemsIdAndAvailability: List<Pair<String, Boolean>> = emptyList(),
-    val loadedItems: Map<String, ItemDataClass> = emptyMap(),
-    val activeDraftOrderId: String? = null,
-    val itemQuantities: Map<String, Int> = emptyMap(),
-    val totalCost: Double = 0.0
-) {
-    val formattedTotalCost: String
-        get() = String.format(Locale.UK, "£%.2f", totalCost)
-
-    val totalItemCount: Int
-        get() = itemQuantities.values.sum()
-}
-
 class ItemViewModel(
     private val itemRepository: ItemRepository,
     private val orderRepository: OrderRepository
 ) : ViewModel() {
-
     private val _uiState = MutableStateFlow(MenuUiState())
     val uiState: StateFlow<MenuUiState> = _uiState.asStateFlow()
     private val orderSyncMutex = Mutex()
@@ -57,41 +36,41 @@ class ItemViewModel(
                 isLoading = true,
                 errorMessage = null,
                 orderSubmitted = false,
+                submittedOrderId = null,
                 locationId = locationId,
                 menuItemsIdAndAvailability = itemsIdAndAvailability,
                 activeDraftOrderId = unfinishedOrderId
             )
         }
-
         viewModelScope.launch {
             val itemResults = itemsIdAndAvailability.map { (id, _) ->
                 async { id to itemRepository.readItem(id) }
             }.awaitAll()
             val successfulItems = mutableMapOf<String, ItemDataClass>()
             var firstError: String? = null
+
             itemResults.forEach { (id, result) ->
                 result.fold(
                     onSuccess = { item -> successfulItems[id] = item },
                     onFailure = { exception ->
-                        if (firstError == null) {
-                            firstError = exception.message ?: "Failed to load menu items"
-                        }
+                        if (firstError == null) firstError = exception.message ?: "Failed to load menu items"
                     }
                 )
             }
             var restoredQuantities = emptyMap<String, Int>()
+
             if (unfinishedOrderId != null) {
                 orderRepository.readOrderData(unfinishedOrderId).fold(
                     onSuccess = { order ->
-                        restoredQuantities = order.itemIdQuantityObject
+                        if (order.locationId == locationId && order.dateTimeOrderInitiated == null) {
+                            restoredQuantities = order.itemIdQuantityObject
+                        } else _uiState.update { it.copy(activeDraftOrderId = null) }
                     },
-                    onFailure = {
-                        // Draft order no longer exists; reset activeDraftOrderId
-                        _uiState.update { it.copy(activeDraftOrderId = null) }
-                    }
+                    onFailure = { _uiState.update { it.copy(activeDraftOrderId = null) } }
                 )
             }
             val initialCost = calculateTotalCost(restoredQuantities, successfulItems)
+
             _uiState.update {
                 it.copy(
                     isLoading = false,
@@ -113,12 +92,8 @@ class ItemViewModel(
     fun removeItemFromOrder(itemId: String) {
         val currentQty = _uiState.value.itemQuantities[itemId] ?: 0
         if (currentQty <= 0) return
-
-        val updatedQuantities = if (currentQty == 1) {
-            _uiState.value.itemQuantities - itemId
-        } else {
-            _uiState.value.itemQuantities + (itemId to currentQty - 1)
-        }
+        val updatedQuantities = if (currentQty == 1) _uiState.value.itemQuantities - itemId
+            else _uiState.value.itemQuantities + (itemId to currentQty - 1)
         updateOrderStateAndSync(updatedQuantities)
     }
 
@@ -128,12 +103,13 @@ class ItemViewModel(
         viewModelScope.launch {
             orderSyncMutex.withLock {
                 _uiState.update { it.copy(isSavingOrder = true, errorMessage = null) }
-                orderRepository.submitOrder(draftId).fold(
+                orderRepository.initiateOrder(draftId).fold(
                     onSuccess = {
                         _uiState.update {
                             it.copy(
                                 isSavingOrder = false,
                                 orderSubmitted = true,
+                                submittedOrderId = draftId,
                                 activeDraftOrderId = null,
                                 itemQuantities = emptyMap(),
                                 totalCost = 0.0
@@ -153,14 +129,10 @@ class ItemViewModel(
         }
     }
 
-    fun clearError() {
-        _uiState.update { it.copy(errorMessage = null) }
-    }
+//    fun clearError() = _uiState.update { it.copy(errorMessage = null) }
 
     private fun updateOrderStateAndSync(updatedQuantities: Map<String, Int>) {
         val updatedTotalCost = calculateTotalCost(updatedQuantities, _uiState.value.loadedItems)
-
-        // Optimistic UI update so '+' and '-' feel instant
         _uiState.update {
             it.copy(
                 itemQuantities = updatedQuantities,
@@ -176,13 +148,9 @@ class ItemViewModel(
 
                 when {
                     updatedQuantities.isEmpty() && draftId != null -> {
-                        orderRepository.deleteDraftOrder(draftId).fold(
-                            onSuccess = {
-                                _uiState.update { it.copy(activeDraftOrderId = null) }
-                            },
-                            onFailure = { e ->
-                                _uiState.update { it.copy(errorMessage = e.message) }
-                            }
+                        orderRepository.deleteUninitiatedOrder(draftId).fold(
+                            onSuccess = { _uiState.update { it.copy(activeDraftOrderId = null) } },
+                            onFailure = { e -> _uiState.update { it.copy(errorMessage = e.message) } }
                         )
                     }
                     draftId == null && updatedQuantities.isNotEmpty() -> {
@@ -192,34 +160,25 @@ class ItemViewModel(
                             totalCost = updatedTotalCost
                         )
                         orderRepository.createOrderData(newOrder).fold(
-                            onSuccess = { newId ->
-                                _uiState.update { it.copy(activeDraftOrderId = newId) }
-                            },
-                            onFailure = { e ->
-                                _uiState.update { it.copy(errorMessage = e.message) }
-                            }
+                            onSuccess = { newId -> _uiState.update { it.copy(activeDraftOrderId = newId) } },
+                            onFailure = { e -> _uiState.update { it.copy(errorMessage = e.message) } }
                         )
                     }
                     draftId != null -> {
-                        orderRepository.updateOrderItemsAndCost(
+                        orderRepository.updateOrderItemsAndTotalCost(
                             docId = draftId,
                             items = updatedQuantities,
                             totalCost = updatedTotalCost
-                        ).onFailure { e ->
-                            _uiState.update { it.copy(errorMessage = e.message) }
-                        }
+                        ).onFailure { e -> _uiState.update { it.copy(errorMessage = e.message) } }
                     }
                 }
-
                 _uiState.update { it.copy(isSavingOrder = false) }
             }
         }
     }
 
-    private fun calculateTotalCost(
-        quantities: Map<String, Int>,
-        items: Map<String, ItemDataClass>
-    ): Double {
+    private fun calculateTotalCost(quantities: Map<String, Int>,
+                                   items: Map<String, ItemDataClass>): Double {
         return quantities.entries.sumOf { (itemId, qty) ->
             val price = items[itemId]?.itemPrice ?: 0.0
             price * qty
@@ -227,14 +186,32 @@ class ItemViewModel(
     }
 
     companion object {
-        fun provideFactory(
-            itemRepository: ItemRepository,
-            orderRepository: OrderRepository
-        ): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+        fun provideFactory(itemRepository: ItemRepository, orderRepository:
+        OrderRepository): ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return ItemViewModel(itemRepository, orderRepository) as T
             }
         }
     }
+}
+
+data class MenuUiState(
+    val isLoading: Boolean = false,
+    val isSavingOrder: Boolean = false,
+    val orderSubmitted: Boolean = false,
+    val submittedOrderId: String? = null,
+    val errorMessage: String? = null,
+    val locationId: String = "",
+    val menuItemsIdAndAvailability: List<Pair<String, Boolean>> = emptyList(),
+    val loadedItems: Map<String, ItemDataClass> = emptyMap(),
+    val itemQuantities: Map<String, Int> = emptyMap(),
+    val totalCost: Double = 0.0,
+    val activeDraftOrderId: String? = null
+) {
+    val formattedTotalCost: String
+        get() = String.format(Locale.UK, "£%.2f", totalCost)
+
+    val totalItemCount: Int
+        get() = itemQuantities.values.sum()
 }

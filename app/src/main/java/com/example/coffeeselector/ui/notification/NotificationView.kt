@@ -39,16 +39,9 @@ fun NotificationListItem(
             ),
         verticalAlignment = Alignment.CenterVertically) {
         Column (Modifier.padding(5.dp)){
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                Text(
-                    text = notificationDC.formattedSentAt, fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp, modifier = Modifier
-                        .weight(1f)
-                        .padding(end = 8.dp)
-                )
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Text(text = notificationDC.formattedTimeSentAt, fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp, modifier = Modifier.weight(1f).padding(end = 8.dp))
                 AnimatedVisibility(!notificationDC.isRead){
                     Text(text = "New", textAlign = TextAlign.End, color = Color.Magenta,
                         fontWeight = FontWeight.Bold)
@@ -59,26 +52,34 @@ fun NotificationListItem(
     }
 }
 
+val sampleNotifications = listOf(
+    NotificationDataClass(
+        id = "1",
+        sentAt = Timestamp.now(),
+        message = "Test message big message that is a bit long",
+        isRead = false
+    ),
+    NotificationDataClass(
+        id = "2",
+        sentAt = Timestamp(Date(System.currentTimeMillis() - 3_600_000)),
+        message = "Test message big message that is a bit long",
+        isRead = false
+    ),
+    NotificationDataClass(
+        id = "3",
+        sentAt = Timestamp(Date(System.currentTimeMillis() - 86_400_000)),
+        message = "Test message big message that is a bit long",
+        isRead = true
+    )
+)
+
+
 @Preview(showBackground = true)
 @Composable
 fun NotificationListItemPreview() {
     Column{
-        NotificationListItem(
-            notificationDC = NotificationDataClass(
-                id = "1",
-                sentAt = Timestamp.now(),
-                message = "Your order has been dispatched and is on its way.",
-                isRead = false
-            )
-        )
-        NotificationListItem(
-            notificationDC = NotificationDataClass(
-                id = "2",
-                sentAt = Timestamp.now(),
-                message = "Welcome! Thanks for verifying your account.",
-                isRead = true
-            )
-        )
+        NotificationListItem(sampleNotifications[1])
+        NotificationListItem(sampleNotifications[2])
     }
 }
 
@@ -99,33 +100,24 @@ fun NotificationList(
         val isNullOrEmpty = notificationDCList.isNullOrEmpty()
 
         if (!isNullOrEmpty) {
-            LazyColumn(
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp), horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .fillMaxWidth()
             ) {
                 items(items = notificationDCList, key = { it.id }) { notificationDC ->
                     NotificationListItem(notificationDC)
                 }
             }
         } else{
-            Text(text = "No Notifications Found", fontWeight = FontWeight.Bold,
-                fontSize = 40.sp, modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .padding(all = 10.dp)
-                , textAlign = TextAlign.Center)
+            Text(text = "No Notifications Found", fontWeight = FontWeight.Bold, fontSize = 40.sp,
+                 textAlign = TextAlign.Center, modifier = Modifier.weight(1f).fillMaxWidth()
+                     .padding(all = 10.dp)
+            )
         }
-        Row(modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.LightGray)
-            .padding(8.dp)) {
+        Row(modifier = Modifier.fillMaxWidth().background(Color.LightGray).padding(8.dp)) {
             Button(onClick = {onClearNotifications()}, modifier = Modifier.weight(1f),
-                enabled = !isNullOrEmpty){
-                Text(text = "Clear Notifications")
-            }
+                enabled = !isNullOrEmpty){ Text(text = "Clear Notifications") }
         }
     }
 }
@@ -133,27 +125,6 @@ fun NotificationList(
 @Preview(showBackground = true, name = "Populated List")
 @Composable
 fun NotificationListPreview() {
-    val sampleNotifications = listOf(
-        NotificationDataClass(
-            id = "1",
-            sentAt = Timestamp.now(),
-            message = "Your parcel is out for delivery today.",
-            isRead = false
-        ),
-        NotificationDataClass(
-            id = "2",
-            sentAt = Timestamp(Date(System.currentTimeMillis() - 3_600_000)),
-            message = "Payment of £24.50 was received.",
-            isRead = false
-        ),
-        NotificationDataClass(
-            id = "3",
-            sentAt = Timestamp(Date(System.currentTimeMillis() - 86_400_000)),
-            message = "Welcome! Your account setup is complete.",
-            isRead = true
-        )
-    )
-
     NotificationList(
         notificationDCList = sampleNotifications,
         onClearNotifications = {}

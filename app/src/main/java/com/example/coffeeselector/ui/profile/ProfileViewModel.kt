@@ -4,68 +4,46 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.coffeeselector.data.model.UserDataClass
 import com.example.coffeeselector.data.repository.UserRepository
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
- *https://developer.android.com/topic/libraries/architecture/viewmodel
+ * https://developer.android.com/topic/libraries/architecture/viewmodel
  * was using localDate but ran into problems with firebase natively reading it
+ * guide to passing mutable status messages
+ * https://developers.arcgis.com/kotlin/programming-patterns/manage-geoview-state/#viewmodel-pattern
+ * mutable state flow
+ * https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-mutable-state-flow/
+ * guide on using coroutines in viewModel scope
+ * https://developer.android.com/kotlin/coroutines#use-coroutines-for-main-safety
  */
 class ProfileViewModel : ViewModel() {
     private val auth = FirebaseAuth.getInstance()
-    private val userRepository = UserRepository()
-    private val userDocId = auth.currentUser?.uid
+    private val database = Firebase.firestore
+    private val userRepository = UserRepository(database, auth)
     private val _userState = MutableStateFlow<UserDataClass?>(null)
     val userData: StateFlow<UserDataClass?> get() = _userState.asStateFlow()
-
-    /**
-     * guide to passing mutable status messages
-     * https://developers.arcgis.com/kotlin/programming-patterns/manage-geoview-state/#viewmodel-pattern
-     * mutable state flow
-     * https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-mutable-state-flow/
-     */
     private val _statusMessage = MutableStateFlow<String?>(null)
     val statusMessage: StateFlow<String?> get() = _statusMessage.asStateFlow()
 
-    /**
-     * guide on using coroutines in viewModel scope
-     * https://developer.android.com/kotlin/coroutines#use-coroutines-for-main-safety
-     */
-    init {
-        getUserData()
-    }
 
+    init { getUserData() }
 
-    fun getUserData(){
-        val currentUserDocId = userDocId
-        if (currentUserDocId != null){
-            viewModelScope.launch {
-                val (isSuccess, message, userDC) = userRepository.readUserData(currentUserDocId)
-                if(isSuccess && userDC != null){
-                    _userState.value = userDC
+    fun getUserData() {
+        viewModelScope.launch {
+            userRepository.readUser()
+                .onSuccess { user -> _userState.value = user }
+                .onFailure { exception -> _statusMessage.value = exception.message
+                    ?: "Failed to load user profile"
                 }
-                _statusMessage.value = message
-            }
-        } else _statusMessage.value = "No user logged in"
+        }
     }
 }
-
-//    fun getUserDataClass(onResult: (Boolean, String) -> Unit) {
-//        if (userDocId != null){
-//            userRepository.readUserData(userDocId) {
-//                    isSuccess, message, userDC ->
-//                if(isSuccess && userDC != null){
-//                    _userState.value = userDC
-//                }
-//                onResult(isSuccess, message)
-//            }
-//        } else {
-//            onResult(false, "No user logged in")
-//        }
-//    }
 
 
 

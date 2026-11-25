@@ -15,7 +15,7 @@ data class ItemDataClass(
     val formattedPrice: String
         get() = String.format(Locale.UK, "£%.2f", itemPrice)
 
-    fun formattedPriceMulti(quantity: Int): String {
+    fun formattedPriceForQuantity(quantity: Int): String {
         return String.format(Locale.UK, "£%.2f", itemPrice * quantity)
     }
 }

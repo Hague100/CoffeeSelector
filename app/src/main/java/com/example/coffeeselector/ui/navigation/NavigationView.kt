@@ -7,7 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.TableView
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -39,45 +39,32 @@ private fun NavTopBarButton(
         verticalArrangement = Arrangement.Center
     ) {
         BadgedBox(
-            badge = {
-                if (badgeCount > 0) {
-                    Badge {
-                        Text(text = if (badgeCount > 99) "99+" else badgeCount.toString())
-                    }
+            badge = { if (badgeCount > 0) {
+                    Badge { Text(text = if (badgeCount > 99) "99+" else badgeCount.toString()) }
                 }
             }
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                modifier = Modifier.size(24.dp)
-            )
+            Icon(imageVector = icon, contentDescription = label, modifier = Modifier.size(24.dp))
         }
         Spacer(modifier = Modifier.height(2.dp))
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Medium,
-            maxLines = 1
-        )
+        Text(text = label, fontSize = 12.sp, fontWeight = FontWeight.Medium, maxLines = 1)
     }
 }
 
 @Composable
-fun NavigationTopBar(
+fun NavTopBar(
     unreadCount: Int = 0,
     onUserClick: () -> Unit = {},
     onLocationsClick: () -> Unit = {},
     onNotificationsClick: () -> Unit = {},
     onOrdersClick: () -> Unit = {}
 ) {
-    Row(
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceEvenly,
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.LightGray)
-            .padding(vertical = 8.dp, horizontal = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceEvenly
+            .background(Color.Gray)
+            .statusBarsPadding()
+            .padding(vertical = 8.dp, horizontal = 4.dp)
     ) {
         NavTopBarButton(
             label = "User",
@@ -92,16 +79,16 @@ fun NavigationTopBar(
             modifier = Modifier.weight(1f)
         )
         NavTopBarButton(
+            label = "Orders",
+            icon = Icons.Default.TableView,
+            onClick = onOrdersClick,
+            modifier = Modifier.weight(1f)
+        )
+        NavTopBarButton(
             label = "Notifications",
             icon = Icons.Default.Notifications,
             badgeCount = unreadCount,
             onClick = onNotificationsClick,
-            modifier = Modifier.weight(1f)
-        )
-        NavTopBarButton(
-            label = "Orders",
-            icon = Icons.Default.ShoppingCart,
-            onClick = onOrdersClick,
             modifier = Modifier.weight(1f)
         )
     }
@@ -110,6 +97,6 @@ fun NavigationTopBar(
 
 @Preview(showBackground = true)
 @Composable
-fun NavigationTopBarPreview() {
-    NavigationTopBar(unreadCount = 3)
+fun NavTopBarPreview() {
+    NavTopBar(unreadCount = 3)
 }

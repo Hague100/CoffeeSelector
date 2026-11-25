@@ -60,7 +60,7 @@ fun BasketItem(
                 )
                 Text(text = if (availability)"(${itemDC.formattedPrice} * $quantity) " else "" , textAlign = TextAlign.End,
                     color = Color.Gray, fontSize = 10.sp)
-                Text(text = if (availability)itemDC.formattedPriceMulti(quantity) else "Not Available" , textAlign = TextAlign.End)
+                Text(text = if (availability)itemDC.formattedPriceForQuantity(quantity) else "Not Available" , textAlign = TextAlign.End)
             }
             Row() {
                 Text(text = description, fontSize = 10.sp, color = Color.Gray,

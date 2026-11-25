@@ -25,30 +25,15 @@ data class OrderDataClass(
     @get:Exclude
     val formattedCost: String
         get() = String.format(Locale.UK, "£%.2f", totalCost)
-
-    @get:Exclude
-    val initiatedLocalDateTime: LocalDateTime?
-        get() = dateTimeOrderInitiated?.toLocalDateTime()
-
-    @get:Exclude
-    val finishedLocalDateTime: LocalDateTime?
-        get() = dateTimeOrderFinished?.toLocalDateTime()
-
     @get:Exclude
     val collectedLocalDateTime: LocalDateTime?
-        get() = dateTimeOrderCollected?.toLocalDateTime()
+        get() = dateTimeOrderCollected?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalDateTime()
 
     @get:Exclude
     val formattedCollectedTime: String?
         get() = collectedLocalDateTime?.format(
             DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm", Locale.UK)
         )
-
-    fun Date.toLocalDateTime(zoneId: ZoneId = ZoneId.systemDefault()): LocalDateTime {
-        return this.toInstant()
-            .atZone(zoneId)
-            .toLocalDateTime()
-    }
     @get:Exclude
     val statusMessage: String
         get() = when {

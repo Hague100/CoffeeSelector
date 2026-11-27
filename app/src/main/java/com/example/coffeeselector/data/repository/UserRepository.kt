@@ -1,6 +1,7 @@
 package com.example.coffeeselector.data.repository
 
 import com.example.coffeeselector.data.model.UserDataClass
+import com.example.coffeeselector.data.model.ValidationException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
@@ -26,6 +27,8 @@ class UserRepository(
     private fun getCurrentUserId(): String? = auth.currentUser?.uid
     suspend fun createUser(userDC: UserDataClass): Result<Unit>{
         val uid = getCurrentUserId() ?: return Result.failure(IllegalStateException("User not authenticated"))
+        val errors = userDC.validate()
+        if (errors.isNotEmpty()) return Result.failure(ValidationException(errors))
         return try {
             usersCollection.document(uid).set(userDC).await()
             Result.success(Unit)

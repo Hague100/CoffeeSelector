@@ -20,10 +20,15 @@ import androidx.compose.ui.unit.dp
 
 
 @Composable
-fun LoginScreen(onLogin: (String, String) -> Unit, onNavigateToRegister: () -> Unit) {
+fun LoginScreen(
+    authError: String = "",
+    onLogin: (String, String) -> Unit,
+    onNavigateToRegister: () -> Unit
+) {
     var email by rememberSaveable { mutableStateOf("") }
     val passwordState = rememberTextFieldState()
-    var error by remember { mutableStateOf("") }
+    var interfaceError by remember { mutableStateOf("") }
+    val displayError = interfaceError.ifEmpty { authError }
     Column(Modifier.padding(24.dp).fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text("Login to Coffee Selector Account", style = MaterialTheme.typography.headlineSmall)
         OutlinedTextField(email, { email = it }, label = { Text("Email") },
@@ -36,8 +41,8 @@ fun LoginScreen(onLogin: (String, String) -> Unit, onNavigateToRegister: () -> U
             Button(
                 onClick = {
                     val password = passwordState.text.toString()
-                    error = if (email.isBlank() || password.isBlank()) "Enter email and password" else ""
-                    if (error.isEmpty()) onLogin(email.trim(), password)
+                    interfaceError = if (email.isBlank() || password.isBlank()) "Enter email and password" else ""
+                    if (interfaceError.isEmpty()) onLogin(email.trim(), password)
                 },
                 modifier = Modifier.padding(5.dp).weight(1f)
             ) { Text("Sign in") }
@@ -46,7 +51,7 @@ fun LoginScreen(onLogin: (String, String) -> Unit, onNavigateToRegister: () -> U
                 modifier = Modifier.padding(5.dp).weight(1f)
             ) {Text("Register")}
         }
-
+        if (displayError.isNotEmpty()) Text(text = displayError, color = Color.Red)
     }
 }
 
@@ -57,7 +62,10 @@ fun LoginScreenPreview() {
 }
 
 @Composable
-fun RegisterScreen(onRegisterUserData: (String, String, String, String, String, String) -> Unit) {
+fun RegisterScreen(
+    authError: String = "",
+    onRegisterUserData: (String, String, String, String, String, String) -> Unit
+) {
     var email by rememberSaveable { mutableStateOf("") }
     var emailConfirmation by rememberSaveable { mutableStateOf("") }
     val passwordState = rememberTextFieldState()
@@ -66,7 +74,8 @@ fun RegisterScreen(onRegisterUserData: (String, String, String, String, String, 
     var lastName by rememberSaveable { mutableStateOf("") }
     var phoneNo by rememberSaveable { mutableStateOf("") }
     var username by rememberSaveable { mutableStateOf("") }
-    var error by remember { mutableStateOf("") }
+    var interfaceError by remember { mutableStateOf("") }
+    val displayError = interfaceError.ifEmpty { authError }
     LazyColumn(modifier = Modifier.fillMaxSize(), contentPadding = PaddingValues(24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -123,14 +132,14 @@ fun RegisterScreen(onRegisterUserData: (String, String, String, String, String, 
                 onClick = {
                     val password = passwordState.text.toString()
                     val passwordConfirmation = passwordConfirmationState.text.toString()
-                    error = if (
-                        email.isBlank() || emailConfirmation.isBlank() || password.isBlank() ||
+                    val errors = mutableListOf<String>()
+                    if (email.isBlank() || emailConfirmation.isBlank() || password.isBlank() ||
                         passwordConfirmation.isBlank() || firstName.isBlank() || lastName.isBlank() ||
                         username.isBlank() || phoneNo.isBlank()
-                    ) "Fill all fields. " else ""
-                    error += if (email != emailConfirmation) "Emails are not the same. " else ""
-                    error += if (password != passwordConfirmation) "Passwords don't match. " else ""
-                    if (error.isEmpty()) {
+                    ) errors.add("Fill all fields.")
+                    if (email.trim() != emailConfirmation.trim()) errors.add("Emails are not the same.")
+                    if (password != passwordConfirmation) errors.add("Passwords don't match.")
+                    if (interfaceError.isEmpty()) {
                         onRegisterUserData(
                             email.trim(),
                             password,
@@ -143,8 +152,8 @@ fun RegisterScreen(onRegisterUserData: (String, String, String, String, String, 
                 }
             ) { Text("Register")}
         }
-        if (error.isNotEmpty()) {
-            item { Text(text = error, color = Color.Red)}
+        if (displayError.isNotEmpty()) {
+            item { Text(text = displayError, color = Color.Red) }
         }
     }
 

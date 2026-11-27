@@ -246,31 +246,39 @@ class MainActivity : ComponentActivity() {
                     }
                     composable<LoginRoute> {
                         val loginViewModel: AuthViewModel = viewModel()
+                        var authError by remember { mutableStateOf("") }
                         LoginScreen(
+                            authError = authError,
                             onLogin = {email, password ->
+                                authError = ""
                                 loginViewModel.login(email, password) { isSuccess, message ->
                                     Toast.makeText(application, message, Toast.LENGTH_SHORT).show()
                                     if (isSuccess) {
                                         navController.navigate(LocationListRoute) {
                                             popUpTo(0) {inclusive = true}
                                         }
-                                    }
+                                    } else authError = message
                                 }
-                            } , {navController.navigate(RegisterRoute)}
+                            } , onNavigateToRegister = {
+                                authError = ""
+                                navController.navigate(RegisterRoute)
+                            }
                         )
                     }
                     composable<RegisterRoute> {
                         val registerViewModel: AuthViewModel = viewModel()
+                        var authError by remember { mutableStateOf("") }
                         RegisterScreen(
+                            authError = authError,
                             onRegisterUserData = {email, password, firstName, lastName, username, phoneNo ->
+                                authError = ""
                                 registerViewModel.registerUserData(email, password, firstName, lastName, username, phoneNo ) { isSuccess, message ->
                                     Toast.makeText(application, message, Toast.LENGTH_SHORT).show()
                                     if(isSuccess) {
                                         navController.navigate(LocationListRoute) {
                                             popUpTo(0) {inclusive = true}
                                         }
-                                    }
-
+                                    } else authError = message
                                 }
                             }
                         )

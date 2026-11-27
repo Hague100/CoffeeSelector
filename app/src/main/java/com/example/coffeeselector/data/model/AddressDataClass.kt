@@ -6,4 +6,6 @@ data class AddressDataClass(
     val city: String = "",
     val county: String? = null,
     val postCode: String = ""
-)
+) {
+
+}

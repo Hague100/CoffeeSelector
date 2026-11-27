@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.coffeeselector.data.model.AddressDataClass
 import com.example.coffeeselector.data.model.LocationDataClass
+import com.google.firebase.firestore.GeoPoint
 
 /**
  * https://developer.android.com/develop/ui/compose/components/button
@@ -36,7 +38,7 @@ import com.example.coffeeselector.data.model.LocationDataClass
 @Composable
 fun LocationItem(
     locationDC: LocationDataClass,
-    distance: String?,
+    distance: Int,
     onNavigateToMenu: () -> Unit
 ){
     Row(
@@ -50,9 +52,13 @@ fun LocationItem(
                 .fillMaxWidth()) {
                 Text(text = locationDC.cafeName, fontWeight = FontWeight.Bold,
                     fontSize = 20.sp, modifier = Modifier.weight(1f).padding(end = 8.dp))
-                Text(text = distance ?: "", textAlign = TextAlign.End)
+                Text(text = if(distance >= 0) {
+                    if (distance < 1000) "$distance m"
+                    else String.format(java.util.Locale.UK, "%.1f km", distance / 1000.0)
+                } else ""
+                    , textAlign = TextAlign.End)
             }
-            Row() {
+            Row {
                 Column(
                     modifier = Modifier
                         .padding(start = 10.dp)
@@ -71,7 +77,7 @@ fun LocationItem(
                         Text(text = locationDC.streetAddress.postCode,  fontWeight = FontWeight.Bold)
                     }
                 }
-                Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.End,) {
+                Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.End) {
                     Button(onNavigateToMenu, modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(4.dp) ) { Text(text = "Menu")}
                 }
@@ -123,76 +129,38 @@ private val testLocationClass3 = LocationDataClass(
 )
 
 
-
 @Preview(showBackground = true)
 @Composable
-fun LocationItemPreview() {
-    LocationItem(
-        testLocationClass,
-        "1000m"
-    ) {}
+fun LocationListPreview() {
+    LocationList(
+        locations = listOf(testLocationClass, testLocationClass2, testLocationClass3),
+        userLocation = null,
+        distanceCalculation = { _, _ -> 1000 }
+    )
 }
+
 
 @Composable
 fun LocationList(
     locations: List<LocationDataClass>,
-    distanceCalculation: (LocationDataClass) -> String,
+    userLocation: GeoPoint?,
+    distanceCalculation: (GeoPoint?, GeoPoint?) -> Int,
     onNavigateToMenu: (LocationDataClass) -> Unit = {}
 ) {
+    val sortedLocations = remember(locations, userLocation) {
+        locations.map { location -> location to distanceCalculation(userLocation, location.cafeCoordinates) }
+            .sortedWith(compareBy { (_, distance) ->
+                if (distance < 0) Int.MAX_VALUE else distance })
+    }
     LazyColumn(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalAlignment = Alignment.CenterHorizontally)
     {
-        items(items = locations, key = {it.id} ) { location ->
+        items(items = sortedLocations, key = { (location, _) -> location.id } ) { (location, distance) ->
             LocationItem(
                 locationDC = location,
-                distance = distanceCalculation(location),
+                distance = distance,
                 onNavigateToMenu = { onNavigateToMenu(location) }
             )
         }
     }
-}
-
-
-
-val testList1 = listOf(testLocationClass)
-val testList2 = listOf(testLocationClass, testLocationClass2, testLocationClass3)
-val testList3 = testList2 + testList2
-val testList4 =  testList3 + testList3 + testList3
-@Preview(showBackground = true, name = "1 Item")
-@Composable
-fun LocationListPreview1(){
-    LocationList(
-        testList1,
-        { "1000" },
-        {}
-    )
-}
-@Preview(showBackground = true, name = "3 Item")
-@Composable
-fun LocationListPreview2(){
-    LocationList(
-        testList2,
-        { "1000" },
-        {}
-    )
-}
-
-@Preview(showBackground = true, name = "6 Item")
-@Composable
-fun LocationListPreview3(){
-    LocationList(
-        testList3,
-        { "1000" },
-        {}
-    )
-}
-
-@Preview(showBackground = true, name = "18 Item")
-@Composable
-fun LocationListPreview4(){
-    LocationList(
-        testList4,
-        { "1000" },
-        {}
-    )
 }

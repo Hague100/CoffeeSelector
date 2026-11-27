@@ -1,11 +1,14 @@
 package com.example.coffeeselector
 
 
+import android.Manifest
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -154,16 +157,35 @@ class MainActivity : ComponentActivity() {
                         val viewModel: LocationViewModel = viewModel()
                         val locations by viewModel.locationsListData.collectAsStateWithLifecycle()
                         val statusMessage by viewModel.statusMessage.collectAsStateWithLifecycle()
+                        val userLocation by viewModel.userLocation.collectAsStateWithLifecycle()
+
+                        val permissionLauncher = rememberLauncherForActivityResult(
+                            contract = ActivityResultContracts.RequestMultiplePermissions()
+                        ) { permissions ->
+                            val granted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                                    permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+                            if (granted) {
+                                viewModel.fetchUserLocation(application)
+                            }
+                        }
 
                         LaunchedEffect(statusMessage) {
                             if (!statusMessage.isNullOrBlank()) {
                                 Toast.makeText(application, statusMessage, Toast.LENGTH_SHORT).show()
                             }
                         }
-
+                        LaunchedEffect(Unit) {
+                            permissionLauncher.launch(
+                                arrayOf(
+                                    Manifest.permission.ACCESS_FINE_LOCATION,
+                                    Manifest.permission.ACCESS_COARSE_LOCATION
+                                )
+                            )
+                        }
                         LocationList(
                             locations = locations,
-                            distanceCalculation = { _ -> "" },
+                            userLocation = userLocation,
+                            distanceCalculation = viewModel::calculateDistance,
                             onNavigateToMenu = { selectedLocation ->
                                 viewModel.selectLocation(selectedLocation.id)
                                 val stockEntries = selectedLocation.menuStockQuantity.toList()
